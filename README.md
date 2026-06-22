@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# K&N Dashboard
 
-## Getting Started
+Painel de gestão interno da **K&N Desenvolvimento de Software** (Mendes & Anaya Desenvolvimento de Software LTDA), criado para Elaine e Kayky controlarem finanças, cronograma, atividades, clientes e dados da empresa.
 
-First, run the development server:
+## Funcionalidades
+
+- **Visão Geral** — indicadores financeiros e resumo operacional
+- **Financeiro** — gráficos, rateio Elaine/Kayky e saldos pendentes
+- **Gastos** — CRUD completo com categorias, parcelas e status
+- **Cronograma** — marcos, prazos e valores previstos vs. realizados
+- **Atividades** — controle de tarefas do projeto (importadas da planilha)
+- **Clientes** — cadastro de clientes e contratos
+- **Dados da Empresa** — informações jurídicas, marca, infraestrutura
+
+## Stack
+
+- [Next.js 16](https://nextjs.org) + TypeScript
+- [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS
+- [Neon PostgreSQL](https://neon.tech) + Drizzle ORM
+- [NextAuth.js](https://authjs.dev) — login Elaine & Kayky
+- Deploy: [Vercel](https://vercel.com)
+
+## Configuração local
+
+### 1. Variáveis de ambiente
+
+Copie `.env.example` para `.env.local` e preencha:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | Connection string do Neon Postgres |
+| `AUTH_SECRET` | Segredo para sessões (`openssl rand -base64 32`) |
+| `AUTH_ELAINE_EMAIL` | E-mail de login da Elaine |
+| `AUTH_ELAINE_PASSWORD` | Senha da Elaine |
+| `AUTH_KAYKY_EMAIL` | E-mail de login do Kayky |
+| `AUTH_KAYKY_PASSWORD` | Senha do Kayky |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Banco de dados (Neon)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Crie um projeto gratuito em [console.neon.tech](https://console.neon.tech)
+2. Copie a connection string para `DATABASE_URL`
+3. Execute:
 
-## Learn More
+```bash
+npm run db:push
+npm run db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Rodar localmente
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Acesse [http://localhost:3000](http://localhost:3000) e faça login.
 
-## Deploy on Vercel
+## Deploy na Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Faça push para [github.com/kaykymendesz/kndashboard](https://github.com/kaykymendesz/kndashboard)
+2. Importe o repositório na [Vercel](https://vercel.com/new)
+3. Adicione as variáveis de ambiente (mesmas do `.env.local`)
+4. Instale a integração **Neon** no Marketplace da Vercel (provisiona `DATABASE_URL` automaticamente)
+5. Após o deploy, rode o seed uma vez:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Com DATABASE_URL de produção configurada localmente:
+npm run db:push
+npm run db:seed
+```
+
+## Login padrão (desenvolvimento)
+
+| Usuário | E-mail | Senha |
+|---------|--------|-------|
+| Elaine | `elaine@kn.dev` | `elaine2026` |
+| Kayky | `kayky@kn.dev` | `kayky2026` |
+
+> Altere as senhas nas variáveis de ambiente antes do deploy em produção.
+
+## Scripts
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run db:push` | Sincroniza schema com o Neon |
+| `npm run db:seed` | Importa dados da planilha inicial |
+
+---
+
+Desenvolvido com ❤️ por K&N — Elaine Rebelo Anaya & Kayky Medes da Silva

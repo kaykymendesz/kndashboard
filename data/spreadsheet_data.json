@@ -1,0 +1,1270 @@
+﻿{
+  "Dados do Projeto": {
+    "columns": [
+      "Se\u00e7\u00e3o",
+      "Campo",
+      "Informa\u00e7\u00e3o",
+      "Observa\u00e7\u00f5es"
+    ],
+    "rows": [
+      [
+        "IDENTIDADE",
+        "Projeto",
+        "Wikinaya",
+        "Rede social cinematogr\u00e1fica emocional e social"
+      ],
+      [
+        "IDENTIDADE",
+        "Empresa",
+        "K&N Tecnologia LTDA",
+        "Abertura de empresa prevista para 20/06/2026"
+      ],
+      [
+        "FUNDADORES",
+        "Elaine Rebelo Anaya",
+        "Fundadora e co-criadora do projeto",
+        "vis\u00e3o emocional, organiza\u00e7\u00e3o e estrat\u00e9gia"
+      ],
+      [
+        "FUNDADORES ",
+        "kayky Medes da Silva ",
+        "Fundador e co-criadorado projeto",
+        "execu\u00e7\u00e3o t\u00e9cnica e desenvolvimento"
+      ],
+      [
+        "JUR\u00cdDICO",
+        "Tipo empresa",
+        "LTDA / ME",
+        ""
+      ],
+      [
+        "JUR\u00cdDICO",
+        "Regime tribut\u00e1rio",
+        "Simples Nacional",
+        ""
+      ],
+      [
+        "JUR\u00cdDICO",
+        "CNAE principal",
+        "6201-5/01",
+        "Desenvolvimento de software"
+      ],
+      [
+        "JUR\u00cdDICO",
+        "CNAE secund\u00e1rio",
+        "6319-4/00",
+        "Portais e plataformas digitais"
+      ],
+      [
+        "MARCA / INPI",
+        "Marca principal",
+        "Wikinaya",
+        ""
+      ],
+      [
+        "MARCA / INPI",
+        "Classe INPI 9",
+        "Software e aplicativo",
+        "Priorit\u00e1ria"
+      ],
+      [
+        "MARCA / INPI",
+        "Classe INPI 42",
+        "Tecnologia e desenvolvimento",
+        "Priorit\u00e1ria"
+      ],
+      [
+        "MARCA / INPI",
+        "Classe INPI 41",
+        "Entretenimento",
+        "Futuro/opcional"
+      ],
+      [
+        "MARCA / INPI",
+        "Registro da marca",
+        "Previsto para 01/07/2026",
+        ""
+      ],
+      [
+        "ESTRUTURA",
+        "Gmail oficial",
+        "wikinayaoficial@gmail.com",
+        ""
+      ],
+      [
+        "ESTRUTURA",
+        "Instagram",
+        "@wikinayaoficial",
+        ""
+      ],
+      [
+        "ESTRUTURA",
+        "TikTok",
+        "@wikinayaoficial",
+        ""
+      ],
+      [
+        "ESTRUTURA",
+        "YouTube",
+        "@wikinayaoficial",
+        ""
+      ],
+      [
+        "ESTRUTURA",
+        "Dom\u00ednio",
+        "Wikinaya",
+        "Comprado no Cloudflare"
+      ],
+      [
+        "INFRAESTRUTURA",
+        "GitHub",
+        "Privado",
+        ""
+      ],
+      [
+        "INFRAESTRUTURA",
+        "Firebase",
+        "Ativo",
+        ""
+      ],
+      [
+        "INFRAESTRUTURA",
+        "Firestore",
+        "Protegido",
+        ""
+      ],
+      [
+        "INFRAESTRUTURA",
+        "Cloudflare",
+        "Ativo",
+        ""
+      ],
+      [
+        "INFRAESTRUTURA",
+        "Cloudinary",
+        "Ativo",
+        ""
+      ],
+      [
+        "INFRAESTRUTURA",
+        "Vercel",
+        "Ativo",
+        ""
+      ],
+      [
+        "INFRAESTRUTURA",
+        "PWA",
+        "Ativo",
+        "Aplicativo instal\u00e1vel"
+      ],
+      [
+        "FUTURO",
+        "IA no Wikinaya",
+        "Planejado",
+        ""
+      ],
+      [
+        "FUTURO",
+        "Sistema de reputa\u00e7\u00e3o",
+        "Planejado",
+        ""
+      ],
+      [
+        "FUTURO",
+        "Expans\u00e3o social",
+        "Planejado",
+        ""
+      ]
+    ]
+  },
+  "Atividades": {
+    "columns": [
+      "ID",
+      "\u00c1rea",
+      "Funcionalidade",
+      "Descri\u00e7\u00e3o",
+      "Status",
+      "Prioridade",
+      "Respons\u00e1vel",
+      "Observa\u00e7\u00f5es"
+    ],
+    "rows": [
+      [
+        "WK-001",
+        "Perfil",
+        "Login Google",
+        "Puxa automaticamente nome e foto pelo google",
+        "Funcionando",
+        "Alta",
+        "Kayky",
+        ""
+      ],
+      [
+        "WK-002",
+        "Perfil",
+        "Foto de perfil",
+        "Integra\u00e7\u00e3o Google  ou subir outra foto",
+        "Funcionando",
+        "Alta",
+        "Kayky",
+        ""
+      ],
+      [
+        "WK-003",
+        "Perfil",
+        "Banner/fundo do perfil",
+        "erro ao ajustar a foto ",
+        "Funcionando",
+        "Alta",
+        "Kayky",
+        ""
+      ],
+      [
+        "WK-004",
+        "Perfil",
+        "Biografia",
+        "Usu\u00e1rio coloca descri\u00e7\u00e3o",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-005",
+        "Perfil",
+        "Sistema de n\u00edveis",
+        "Usu\u00e1rio sobe de n\u00edvel conforme uso/intera\u00e7\u00f5es ( novato, explorador, maratonador e cr\u00edtico))",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-006",
+        "Perfil",
+        "Barra de progresso",
+        "Mostra progresso at\u00e9 pr\u00f3ximo n\u00edvel",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-007",
+        "Perfil",
+        "Pr\u00f3ximo n\u00edvel vis\u00edvel",
+        "Ex: Pr\u00f3ximo: Cin\u00e9filo",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-008",
+        "Perfil",
+        "Alterar 'Cineasta em Forma\u00e7\u00e3o'",
+        "Sugest\u00e3o: 'Cin\u00e9filo em Forma\u00e7\u00e3o'",
+        "Ajuste",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-009",
+        "Perfil",
+        "Compatibilidade",
+        "Grande diferencial",
+        "Funcionando",
+        "Alta",
+        "kayky",
+        ""
+      ],
+      [
+        "WK-010",
+        "Perfil",
+        "Parceiro amoroso/sintonia",
+        "erro notificar e aceita\u00e7\u00e3o do parceiro",
+        "Erro",
+        "Alta",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-011",
+        "Conquistas",
+        "Conquista 'Novato'",
+        "Primeiros acessos/intera\u00e7\u00f5es",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-012",
+        "Conquistas",
+        "Conquista 'Maratonador'",
+        "Quantidade de filmes vistos",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-013",
+        "Conquistas",
+        "Conquista 'Explorador'",
+        "Quantidade de g\u00eaneros explorados",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-014",
+        "Conquistas",
+        "Conquista 'Cr\u00edtico'",
+        "Quantidade de avalia\u00e7\u00f5es/resenhas",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-015",
+        "Conquistas",
+        "Conquistas ocultas",
+        "\u274c Futuro",
+        "Conquistas surpresa",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-016",
+        "Conquistas",
+        "Conquistas emocionais",
+        "\u274c Futuro",
+        "Ex: especialista em finais tristes",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-017",
+        "Conquistas",
+        "Compartilhamento de conquistas",
+        "\u274c Futuro",
+        "Compartilhar no feed/story",
+        "M\u00e9dia",
+        "Elaine",
+        ""
+      ],
+      [
+        "WK-018",
+        "Feed",
+        "Not\u00edcias autom\u00e1ticas",
+        "Mant\u00e9m feed vivo",
+        "Funcionando",
+        "Alta",
+        "kayky",
+        ""
+      ],
+      [
+        "WK-019",
+        "Feed",
+        "Spoiler autom\u00e1tico",
+        "Excelente diferencial",
+        "Funcionando",
+        "Alta",
+        "kayky",
+        ""
+      ],
+      [
+        "WK-020",
+        "Feed",
+        "Conte\u00fado autom\u00e1tico",
+        "Rankings, trends e retrospectivas",
+        "Planejamento",
+        "Alta",
+        "Kayky",
+        ""
+      ],
+      [
+        "WK-021",
+        "Feed",
+        "Perguntas emocionais autom\u00e1ticas",
+        "Para coletar mais dados para o app",
+        "Fazer",
+        "Alta",
+        "Kayky",
+        ""
+      ],
+      [
+        "WK-022",
+        "Feed",
+        "Cards de emo\u00e7\u00f5es",
+        "Me destruiu, chorei, etc",
+        "Fazer",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-023",
+        "Filmes",
+        "Marcar assistido",
+        "",
+        "Funcionando",
+        "Alta",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-024",
+        "Filmes",
+        "Data da primeira vez",
+        "primeira vez que assitiu",
+        "Funcionando",
+        "Alta",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-025",
+        "Filmes",
+        "Marcar com quem assistiu",
+        "adicionar contato com quem assistiu e criar lista automatica",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-026",
+        "Filmes",
+        "Lista autom\u00e1tica de assistidos",
+        "",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-027",
+        "Filmes",
+        "Bot\u00e3o reassistido",
+        "clicar varias vezes e ir contabilizando o numero de vezes assistido",
+        "Funcionando",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-028",
+        "Filmes",
+        "Hist\u00f3rico de reassistidas",
+        "",
+        "Funcionando",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-029",
+        "Filmes",
+        "Momento/cena marcante",
+        "",
+        "Em estudo",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-030",
+        "Listas",
+        "Criar listas",
+        "",
+        "Funcionando",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-031",
+        "Listas",
+        "Listas p\u00fablicas",
+        "",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-032",
+        "Listas",
+        "Listas privadas",
+        "",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-033",
+        "Listas",
+        "Listas compartilhadas",
+        "",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-034",
+        "Listas",
+        "Edi\u00e7\u00e3o compartilhada",
+        "",
+        "Funcionando",
+        "Baixa",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-035",
+        "Listas",
+        "Lista compartilhada por adi\u00e7\u00e3o de contato",
+        "",
+        "N\u00e3o informado",
+        "M\u00e9dia",
+        "kayky ",
+        ""
+      ],
+      [
+        "WK-036",
+        "Indica\u00e7\u00f5es",
+        "Recomendar filmes",
+        "Indicar filmes para amigos",
+        "Funcionando",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-037",
+        "Indica\u00e7\u00f5es",
+        "Pasta autom\u00e1tica recebidas",
+        "",
+        "N\u00e3o informado",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-038",
+        "Indica\u00e7\u00f5es",
+        "Pasta autom\u00e1tica enviadas",
+        "",
+        "N\u00e3o informado",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-039",
+        "Indica\u00e7\u00f5es",
+        "Avaliar indica\u00e7\u00e3o",
+        "",
+        "N\u00e3o informado",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-040",
+        "Indica\u00e7\u00f5es",
+        "Selo forte indicador",
+        "",
+        "N\u00e3o informado",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-041",
+        "Indica\u00e7\u00f5es",
+        "Taxa de acerto",
+        "",
+        "N\u00e3o informado",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-042",
+        "Retrospectiva",
+        "Retrospectiva anual",
+        "Resumo estilo Spotify Wrapped",
+        "Ideia",
+        "Alta",
+        "",
+        ""
+      ],
+      [
+        "WK-043",
+        "Retrospectiva",
+        "Base de dados pronta",
+        "",
+        "Fazer",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-044",
+        "Retrospectiva",
+        "Filme mais visto",
+        "",
+        "Fazer",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-045",
+        "Retrospectiva",
+        "Pessoa que mais assistiu junto",
+        "",
+        "Fazer",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-046",
+        "Retrospectiva",
+        "G\u00eanero favorito",
+        "",
+        "Fazer",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-047",
+        "Retrospectiva",
+        "Compartilhamento estilo Spotify",
+        "",
+        "Fazer",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-048",
+        "Retrospectiva",
+        "filme mais reassistido",
+        "",
+        "Fazer",
+        "M\u00e9dia",
+        "",
+        ""
+      ],
+      [
+        "WK-049",
+        "Seguran\u00e7a",
+        "GitHub privado",
+        "C\u00f3digo-fonte protegido",
+        "Ativo",
+        "Alta",
+        "",
+        ""
+      ],
+      [
+        "WK-050",
+        "Seguran\u00e7a",
+        "Cloudflare",
+        "Prote\u00e7\u00e3o de dom\u00ednio e estabilidade",
+        "Ativo",
+        "Baixa",
+        "",
+        ""
+      ]
+    ]
+  },
+  "Cronograma": {
+    "columns": [
+      "Data prevista",
+      "Item",
+      "Categoria",
+      "Prioridade",
+      "Status",
+      "Valor previsto (R$)",
+      "Valor realizado (R$)",
+      "Diferen\u00e7a (R$)",
+      "Respons\u00e1vel",
+      "Observa\u00e7\u00f5es"
+    ],
+    "rows": [
+      [
+        "2026-06-03 00:00:00",
+        "Abertura da K&N ",
+        "Empresa/Jur\u00eddico",
+        "Alta",
+        "Planejado",
+        "",
+        "0.0",
+        "",
+        "Elaine e Kayky",
+        "razao social: Mendes & Anaya Desenvolvimento de Software  LTDA"
+      ],
+      [
+        "",
+        "Registro de marca Wikinaya",
+        "Jur\u00eddico/Marca",
+        "Alta",
+        "Planejado",
+        "",
+        "0.0",
+        "",
+        "Elaine e Kayky",
+        "Previs\u00e3o informada: 01/07. Conferir INPI e valor final."
+      ],
+      [
+        "",
+        "Contrato/NDA com programador",
+        "Jur\u00eddico",
+        "Alta",
+        "Analisando",
+        "",
+        "0.0",
+        "",
+        "Elaine e Kayky",
+        "Proteger confidencialidade antes de compartilhar detalhes do conceito."
+      ],
+      [
+        "",
+        "Criar postagens de divulga\u00e7\u00e3o",
+        "Marketing",
+        "Alta",
+        "A fazer",
+        "",
+        "0.0",
+        "",
+        "Elaine/Kayky",
+        "Posts pequenos apresentando proposta, nome e conceito."
+      ],
+      [
+        "",
+        "Criar posts ensinando a usar",
+        "Marketing",
+        "Alta",
+        "A fazer",
+        "",
+        "0.0",
+        "",
+        "Elaine/Kayky",
+        "Tutoriais simples: clicar em assistido, avaliar, cena marcante etc."
+      ],
+      [
+        "2026-06-15 00:00:00",
+        "Google Play Console",
+        "Publica\u00e7\u00e3o App",
+        "Alta",
+        "Futuro",
+        "",
+        "0.0",
+        "",
+        "Kayky",
+        "Necess\u00e1rio para publicar app Android."
+      ],
+      [
+        "",
+        "Apple Developer",
+        "Publica\u00e7\u00e3o App",
+        "Alta",
+        "Futuro",
+        "",
+        "0.0",
+        "",
+        "Kayky",
+        "Necess\u00e1rio para publicar app iOS."
+      ],
+      [
+        "",
+        "Servidor/Hospedagem",
+        "Infraestrutura",
+        "Alta",
+        "Futuro",
+        "",
+        "0.0",
+        "",
+        "Kayky",
+        "Avaliar custo quando o site/app estiver em desenvolvimento."
+      ],
+      [
+        "",
+        "Planejar feed/comunidades",
+        "Produto",
+        "Alta",
+        "A fazer",
+        "",
+        "0.0",
+        "",
+        "Elaine",
+        "Feed pode ter cr\u00edticas, coment\u00e1rios, cenas marcantes, retrospectiva estilo Spotify e comunidades por filmes/s\u00e9ries."
+      ],
+      [
+        "",
+        "Beta interno: corrigir sintonia, chat, reassistido e crop de imagens",
+        "Projeto",
+        "Cr\u00edtica",
+        "Planejado",
+        "",
+        "0.0",
+        "",
+        "Kayky",
+        "Fase antes de liberar para mais usu\u00e1rios."
+      ],
+      [
+        "",
+        "Lan\u00e7amento beta p\u00fablico",
+        "Projeto",
+        "Alta",
+        "Futuro",
+        "",
+        "0.0",
+        "",
+        "Elaine e Kayky",
+        "Depende das corre\u00e7\u00f5es principais."
+      ],
+      [
+        "",
+        "V\u00eddeos explicativos para redes sociais",
+        "Marketing",
+        "Alta",
+        "Planejado",
+        "",
+        "0.0",
+        "",
+        "Elaine/Kayky",
+        "Conte\u00fados curtos e interativos."
+      ],
+      [
+        "",
+        "Pol\u00edtica de privacidade e termos de uso",
+        "Jur\u00eddico",
+        "Alta",
+        "Fazer",
+        "",
+        "0.0",
+        "",
+        "Elaine e Kayky",
+        "Obrigat\u00f3rio para crescimento e publica\u00e7\u00e3o."
+      ],
+      [
+        "",
+        "Expans\u00e3o com IA e recomenda\u00e7\u00f5es emocionais",
+        "Produto/Futuro",
+        "M\u00e9dia",
+        "Futuro",
+        "",
+        "0.0",
+        "",
+        "Kayky",
+        "Planejamento futuro."
+      ],
+      [
+        "2026-05-18 00:00:00",
+        "Cria\u00e7\u00e3o do Wikinaya inicialmente chamado de Anayawiki",
+        "Hist\u00f3rico do Projeto",
+        "Alta",
+        "Finalizado",
+        "",
+        "",
+        "",
+        "Elaine e Kayky",
+        "Preencher data oficial ou aproximada."
+      ],
+      [
+        "2026-05-24 00:00:00",
+        "Cria\u00e7\u00e3o do Gmail wikinayaoficial@gmail.com",
+        "Estrutura/Contato",
+        "Alta",
+        "Pendente preencher",
+        "",
+        "",
+        "",
+        "Elaine e Kayky",
+        "Preencher data de cria\u00e7\u00e3o."
+      ],
+      [
+        "2026-05-24 00:00:00",
+        "Cria\u00e7\u00e3o do Instagram @wikinayaoficial",
+        "Marketing/Redes",
+        "Alta",
+        "Pendente preencher",
+        "",
+        "",
+        "",
+        "Elaine e Kayky",
+        "Preencher data de cria\u00e7\u00e3o."
+      ],
+      [
+        "2026-05-24 00:00:00",
+        "Cria\u00e7\u00e3o do TikTok @wikinayaoficial",
+        "Marketing/Redes",
+        "M\u00e9dia",
+        "Verificar",
+        "",
+        "",
+        "",
+        "Elaine e Kayky",
+        "Confirmar se j\u00e1 existe e data."
+      ],
+      [
+        "2026-05-24 00:00:00",
+        "Compra/ativa\u00e7\u00e3o do dom\u00ednio",
+        "Infraestrutura",
+        "Alta",
+        "Pendente preencher",
+        "",
+        "",
+        "",
+        "Kayky",
+        "Preencher dom\u00ednio e data."
+      ],
+      [
+        "2026-05-26 00:00:00",
+        "Compra do pacote cursor Ia",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "15/02016",
+        "Assinatura do contrato K&N",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2026-06-16 00:00:00",
+        "Libera\u00e7\u00e3o da Wikinaya Beta",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2026-06-30 00:00:00",
+        "Estreia wikinaya",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2026-06-17 00:00:00",
+        "Abertura oficial da K&N",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    ]
+  },
+  "Gastos": {
+    "columns": [
+      "ID",
+      "Descri\u00e7\u00e3o do Gasto",
+      "Categoria",
+      "Fornecedor/Servi\u00e7o",
+      "Data da Compra",
+      "Respons\u00e1vel Financeiro",
+      "Valor Total (R$)",
+      "Cota Elaine (R$)",
+      "Cota Kayky (R$)",
+      "Parcelado?",
+      "Quantidade de Parcelas",
+      "Valor da Parcela (R$)",
+      "Parcelas Pagas",
+      "Parcelas Restantes",
+      "Status Geral",
+      "Data de Vencimento",
+      "Forma de Pagamento",
+      "Pagamento Realizado Por",
+      "Elaine Quitou?",
+      "Kayky Quitou?",
+      "Saldo Pendente Elaine",
+      "Saldo Pendente Kayky",
+      "Email Vinculado",
+      "Renova\u00e7\u00e3o Autom\u00e1tica",
+      "Data de Expira\u00e7\u00e3o",
+      "Respons\u00e1vel do Registro"
+    ],
+    "rows": [
+      [
+        "1",
+        "Dom\u00ednio Wikinaya",
+        "Dom\u00ednio",
+        "Cloudflare",
+        "24/05/2026",
+        "Kayky",
+        "52.46",
+        "26.23",
+        "26.23",
+        "N\u00e3o",
+        "1",
+        "52.46",
+        "1",
+        "0",
+        "Pago",
+        "24/05/2027",
+        "D\u00c9BITO",
+        "Kayky",
+        "Sim",
+        "Sim",
+        "0.0",
+        "0.0",
+        "kayky1714@hotmail.com",
+        "Sim",
+        "24/05/2027",
+        "Caiaque Mendes dos Santos"
+      ],
+      [
+        "2",
+        "Assinatura Cursor IA",
+        "Desenvolvimento/programa\u00e7\u00e3o",
+        "Cursor IA",
+        "2026-05-26 00:00:00",
+        "Kayky",
+        "104.23",
+        "52.115",
+        "52.115",
+        "N\u00e3o",
+        "1",
+        "104.23",
+        "1",
+        "0",
+        "Pago",
+        "2026-06-26 00:00:00",
+        "D\u00c9BITO",
+        "Kayky",
+        "sim",
+        "Sim",
+        "0.0",
+        "0.0",
+        "kayky1714@hotmail.com",
+        "N\u00e3o",
+        "2026-05-26 00:00:00",
+        "Kayky"
+      ],
+      [
+        "3",
+        "Contabilidade ",
+        "Legaliza\u00e7\u00e3o da empresa ",
+        "contabilizei",
+        "2026-05-29 00:00:00",
+        "Kayky ",
+        "225.0",
+        "112.5",
+        "112.5",
+        "N\u00e3o",
+        "1",
+        "225.0",
+        "1",
+        "0",
+        "Pago",
+        "2026-06-29 00:00:00",
+        "D\u00c9BITO",
+        "Kayky",
+        "sim",
+        "Sim",
+        "0.0",
+        "0.0",
+        "",
+        "N\u00e3o",
+        "2026-06-29 00:00:00",
+        "Kayky e Elaine"
+      ],
+      [
+        "4",
+        "Google Play Store",
+        "play store",
+        "Google",
+        "2026-06-15 00:00:00",
+        "Kayky",
+        "135.94",
+        "67.97",
+        "67.97",
+        "N\u00e3o",
+        "1",
+        "135.94",
+        "1",
+        "0",
+        "Pago",
+        "",
+        "cr\u00e9dito ",
+        "Kayky",
+        "sim",
+        "sim",
+        "0.0",
+        "0.0",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "5",
+        "Imposto TFE",
+        "K&N",
+        "Prefeitura ",
+        "2026-06-17 00:00:00",
+        "Kayky",
+        "236.35",
+        "118.175",
+        "118.175",
+        "N\u00e3o ",
+        "1",
+        "236.35",
+        "1",
+        "1",
+        "N\u00e3o ",
+        "2026-10-13 00:00:00",
+        "",
+        "",
+        "N\u00e3o ",
+        "N\u00e3o ",
+        "118.175",
+        "118.175",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "6",
+        "Assinatura Cursor IA",
+        "Desenvolvimento/programa\u00e7\u00e3o",
+        "Cursor IA",
+        "2026-06-20 00:00:00",
+        "Kayky",
+        "345.95",
+        "172.975",
+        "172.975",
+        "N\u00e3o",
+        "1",
+        "345.95",
+        "1",
+        "0",
+        "N\u00e3o ",
+        "2026-06-20 00:00:00",
+        "Cr\u00e9dito",
+        "Elaine",
+        "Sim",
+        "N\u00e3o ",
+        "0.0",
+        "172.975",
+        "kayky1714@hotmail.com",
+        "Sim",
+        "2026-07-20 00:00:00",
+        "Kayky"
+      ]
+    ]
+  },
+  "Resumo Financeiro": {
+    "columns": [
+      "Indicador",
+      "Valor"
+    ],
+    "rows": [
+      [
+        "Total investido no projeto",
+        "1099.93"
+      ],
+      [
+        "Total pago",
+        "517.63"
+      ],
+      [
+        "Total pendente",
+        "0"
+      ],
+      [
+        "Total investido por Elaine",
+        "549.965"
+      ],
+      [
+        "Total investido por Kayky",
+        "549.965"
+      ],
+      [
+        "Saldo pendente Elaine",
+        "118.175"
+      ],
+      [
+        "Saldo pendente Kayky",
+        "291.15"
+      ],
+      [
+        "Total previsto no cronograma",
+        "0"
+      ],
+      [
+        "Total j\u00e1 realizado do cronograma",
+        "0"
+      ],
+      [
+        "Diferen\u00e7a previsto x realizado",
+        "291.15"
+      ],
+      [
+        "Atividades cadastradas",
+        "103"
+      ],
+      [
+        "Atividades cr\u00edticas",
+        "2"
+      ],
+      [
+        "Atividades altas",
+        "33"
+      ],
+      [
+        "Atividades pendentes/ativas",
+        "78"
+      ],
+      [
+        "",
+        ""
+      ],
+      [
+        "Como a planilha conversa",
+        "Cronograma registra o previsto; Gastos registra o real; Resumo compara os totais."
+      ]
+    ]
+  }
+}
