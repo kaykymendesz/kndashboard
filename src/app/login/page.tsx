@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Building2, Lock, Mail, Shield } from "lucide-react";
+import { COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -56,7 +57,7 @@ export default function LoginPage() {
           </p>
           <div className="flex flex-col gap-3 pt-4">
             {[
-              { icon: Building2, text: "Mendes & Anaya Desenvolvimento de Software LTDA" },
+              { icon: Building2, text: COMPANY_LEGAL_NAME },
               { icon: Shield, text: "Acesso restrito aos administradores" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3 text-sm text-white/80">

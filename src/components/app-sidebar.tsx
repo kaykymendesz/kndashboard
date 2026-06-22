@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { getIcon } from "@/lib/constants";
+import { getIcon, COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export type NavItem = {
   id: number;
@@ -168,7 +168,7 @@ export function DashboardShell({
             <Separator orientation="vertical" className="h-5 hidden sm:block" />
             <div className="hidden sm:block min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">
-                Mendes & Anaya Desenvolvimento de Software LTDA
+                {COMPANY_LEGAL_NAME}
               </p>
               <p className="text-xs text-muted-foreground capitalize truncate">{today}</p>
             </div>

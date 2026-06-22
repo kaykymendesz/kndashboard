@@ -86,7 +86,7 @@ async function main() {
       VALUES (
         'K&N Empresa',
         'kn-empresa',
-        'Mendes & Anaya Desenvolvimento de Software LTDA — dados jurídicos e estrutura.',
+        'K&N Desenvolvimento de Software LTDA — dados jurídicos e estrutura.',
         'Ativo',
         '#1e3a5f',
         ''
