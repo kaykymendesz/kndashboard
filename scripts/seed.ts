@@ -43,7 +43,8 @@ async function main() {
     process.exit(1);
   }
 
-  const data: SpreadsheetData = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
+  const raw = fs.readFileSync(dataPath, "utf-8").replace(/^\uFEFF/, "");
+  const data: SpreadsheetData = JSON.parse(raw);
 
   console.log("Limpando tabelas...");
   await db.delete(schema.expenses);
