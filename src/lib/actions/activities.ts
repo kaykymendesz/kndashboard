@@ -39,6 +39,7 @@ export async function createActivity(input: ActivityInput) {
   const wikinayaId = await getWikinayaId();
   await db.insert(activities).values(mapActivityInput(input, wikinayaId));
   revalidatePath("/atividades");
+  revalidatePath("/projetos/wikinaya");
   revalidatePath("/projetos");
   revalidatePath("/");
 }
@@ -47,6 +48,7 @@ export async function updateActivity(id: number, input: ActivityInput) {
   const wikinayaId = await getWikinayaId();
   await db.update(activities).set(mapActivityInput(input, wikinayaId)).where(eq(activities.id, id));
   revalidatePath("/atividades");
+  revalidatePath("/projetos/wikinaya");
   revalidatePath("/projetos");
   revalidatePath("/");
 }
@@ -54,6 +56,7 @@ export async function updateActivity(id: number, input: ActivityInput) {
 export async function deleteActivity(id: number) {
   await db.delete(activities).where(eq(activities.id, id));
   revalidatePath("/atividades");
+  revalidatePath("/projetos/wikinaya");
   revalidatePath("/projetos");
   revalidatePath("/");
 }

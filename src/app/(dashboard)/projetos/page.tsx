@@ -60,7 +60,7 @@ export default async function ProjetosPage() {
 
                 <Button asChild className="w-full kn-btn-primary gap-2 group-hover:gap-3 transition-all">
                   <Link href={`/projetos/${project.slug}`}>
-                    Ver detalhes do projeto
+                    {project.slug === "wikinaya" ? "Abrir projeto Wikinaya" : "Ver detalhes do projeto"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

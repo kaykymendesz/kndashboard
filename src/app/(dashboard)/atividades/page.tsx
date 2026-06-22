@@ -1,22 +1,6 @@
-import { ActivitiesManager } from "@/components/activities-manager";
-import { getWikinayaActivities } from "@/lib/actions/activities";
-import { getWikinayaProject } from "@/lib/actions/projects";
-import { getClassificationNames } from "@/lib/actions/settings";
+import { redirect } from "next/navigation";
+import { WIKINAYA_SLUG } from "@/lib/db/schema";
 
-export default async function AtividadesPage() {
-  const [items, project, statuses, priorities] = await Promise.all([
-    getWikinayaActivities(),
-    getWikinayaProject(),
-    getClassificationNames("activity_status"),
-    getClassificationNames("activity_priority"),
-  ]);
-
-  return (
-    <ActivitiesManager
-      items={items}
-      projectName={project?.project.name ?? "Wikinaya"}
-      statusOptions={statuses}
-      priorityOptions={priorities}
-    />
-  );
+export default function AtividadesRedirectPage() {
+  redirect(`/projetos/${WIKINAYA_SLUG}?tab=atividades`);
 }

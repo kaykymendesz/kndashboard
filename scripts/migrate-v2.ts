@@ -138,6 +138,23 @@ async function main() {
     console.log("Classificações padrão criadas.");
   }
 
+  console.log("Sincronizando menus Wikinaya...");
+  await sql`UPDATE menu_items SET visible = false WHERE href = '/atividades'`;
+
+  const wikinayaMenu = await sql`SELECT id FROM menu_items WHERE href = '/projetos/wikinaya'`;
+  if (wikinayaMenu.length === 0) {
+    await sql`
+      INSERT INTO menu_items (label, href, icon, group_label, sort_order, visible)
+      VALUES ('Projeto Wikinaya', '/projetos/wikinaya', 'FolderKanban', 'Projetos', 4, true)
+    `;
+  } else {
+    await sql`
+      UPDATE menu_items
+      SET label = 'Projeto Wikinaya', group_label = 'Projetos', visible = true, sort_order = 4
+      WHERE href = '/projetos/wikinaya'
+    `;
+  }
+
   console.log("Migração v2 concluída.");
 }
 
