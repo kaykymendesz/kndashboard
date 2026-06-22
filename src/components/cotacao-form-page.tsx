@@ -60,10 +60,10 @@ export function CotacaoFormPage({ quotation, client }: { quotation: Quotation; c
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="kn-page space-y-6 max-w-2xl">
       <Link
         href={`/atendimento/clientes/${client.slug}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-emerald-700"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {client.name}
       </Link>
@@ -72,7 +72,7 @@ export function CotacaoFormPage({ quotation, client }: { quotation: Quotation; c
         <h1 className="text-2xl font-bold">{form.title}</h1>
         <Badge>{form.status}</Badge>
       </div>
-      <p className="text-lg font-semibold text-emerald-800 tabular-nums">{formatCurrency(form.value)}</p>
+      <p className="text-lg font-semibold text-primary tabular-nums">{formatCurrency(form.value)}</p>
 
       <form onSubmit={onSubmit}>
         <Card className="kn-card">
@@ -102,7 +102,7 @@ export function CotacaoFormPage({ quotation, client }: { quotation: Quotation; c
                 </Select>
               </div>
             </div>
-            <Button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white w-fit" disabled={pending}>
+            <Button type="submit" className="kn-btn-primary w-fit" disabled={pending}>
               Salvar
             </Button>
           </CardContent>

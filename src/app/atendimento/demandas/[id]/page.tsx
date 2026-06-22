@@ -27,10 +27,10 @@ export default async function DemandaDetailPage({ params }: Props) {
   const completed = steps.filter((s) => s.status === "Concluído").length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="kn-page">
       <Link
         href={`/atendimento/clientes/${client.slug}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-emerald-700"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {client.name}
       </Link>
@@ -66,7 +66,7 @@ export default async function DemandaDetailPage({ params }: Props) {
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="text-xs text-muted-foreground w-6">{i + 1}.</span>
                   <div>
-                    <p className="font-medium text-sm group-hover:text-emerald-700">{step.name}</p>
+                    <p className="font-medium text-sm group-hover:text-primary">{step.name}</p>
                     <p className="text-xs text-muted-foreground">{step.category}</p>
                   </div>
                 </div>

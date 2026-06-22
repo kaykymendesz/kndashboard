@@ -35,6 +35,11 @@ export type NavItem = {
   visible: boolean | null;
 };
 
+export type ShellConfig = {
+  subtitle?: string;
+  headerBadge?: string;
+};
+
 function getInitials(name?: string | null) {
   if (!name) return "KN";
   return name
@@ -47,6 +52,7 @@ function getInitials(name?: string | null) {
 
 function isNavActive(pathname: string, href: string) {
   if (href === "/gestao") return pathname === "/gestao";
+  if (href === "/atendimento") return pathname === "/atendimento";
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -54,12 +60,15 @@ function isNavActive(pathname: string, href: string) {
 export function AppSidebar({
   userName,
   menuItems,
+  shell,
 }: {
   userName?: string | null;
   menuItems: NavItem[];
+  shell?: ShellConfig;
 }) {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const subtitle = shell?.subtitle ?? "Gestão Empresarial";
 
   const closeMobileMenu = () => {
     if (isMobile) setOpenMobile(false);
@@ -81,7 +90,7 @@ export function AppSidebar({
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white leading-tight truncate">K&N Dashboard</p>
-            <p className="text-[11px] text-sidebar-foreground/60 truncate">Gestão Empresarial</p>
+            <p className="text-[11px] text-sidebar-foreground/60 truncate">{subtitle}</p>
           </div>
         </div>
       </SidebarHeader>
@@ -138,7 +147,7 @@ export function AppSidebar({
         )}
         <Link
           href="/"
-          className="w-full justify-start gap-2 h-9 max-md:h-11 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white transition-colors flex items-center px-3 rounded-lg text-sm mb-1"
+          className="w-full justify-start gap-2 h-9 max-md:h-11 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white transition-colors flex items-center px-3 rounded-lg text-sm"
         >
           Trocar área
         </Link>
@@ -159,10 +168,12 @@ export function DashboardShell({
   children,
   userName,
   menuItems,
+  shell,
 }: {
   children: React.ReactNode;
   userName?: string | null;
   menuItems: NavItem[];
+  shell?: ShellConfig;
 }) {
   const today = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -171,16 +182,19 @@ export function DashboardShell({
     year: "numeric",
   });
 
+  const headerBadge = shell?.headerBadge ?? "Painel Gerencial";
+  const mobileTitle = shell?.subtitle === "Atendimento a Clientes" ? "K&N Atendimento" : "K&N Dashboard";
+
   return (
     <SidebarProvider>
-      <AppSidebar userName={userName} menuItems={menuItems} />
+      <AppSidebar userName={userName} menuItems={menuItems} shell={shell} />
       <main className="flex min-h-svh flex-1 flex-col bg-background max-md:min-h-dvh">
         <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center justify-between gap-3 border-b border-border/60 bg-white/80 backdrop-blur-md px-4 md:px-6 shadow-sm max-md:pt-[env(safe-area-inset-top)]">
           <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0" />
             <Separator orientation="vertical" className="h-5 hidden sm:block" />
             <div className="min-w-0 flex-1 md:hidden">
-              <p className="text-sm font-semibold text-foreground truncate">K&N Dashboard</p>
+              <p className="text-sm font-semibold text-foreground truncate">{mobileTitle}</p>
               <p className="text-[11px] text-muted-foreground truncate capitalize">{today.split(",")[0]}</p>
             </div>
             <div className="hidden sm:block min-w-0">
@@ -192,7 +206,7 @@ export function DashboardShell({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="hidden md:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              Painel Gerencial
+              {headerBadge}
             </span>
           </div>
         </header>

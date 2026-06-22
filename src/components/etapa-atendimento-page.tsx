@@ -64,10 +64,10 @@ export function EtapaAtendimentoPage({
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="kn-page space-y-6 max-w-2xl">
       <Link
         href={`/atendimento/demandas/${demand.id}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-emerald-700"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> {demand.title}
       </Link>
@@ -105,7 +105,7 @@ export function EtapaAtendimentoPage({
               <Textarea rows={6} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Registre o andamento, decisões, contatos com o cliente..." />
             </div>
             <div className="flex gap-3">
-              <Button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white" disabled={pending}>
+              <Button type="submit" className="kn-btn-primary" disabled={pending}>
                 {pending ? "Salvando..." : "Salvar e voltar"}
               </Button>
               <Button type="button" variant="outline" asChild>

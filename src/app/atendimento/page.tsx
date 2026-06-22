@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Users, ChevronRight } from "lucide-react";
+import { Users, ChevronRight, Headphones } from "lucide-react";
 import { getClients } from "@/lib/actions/clients";
 import { getAttendanceCasesByClient } from "@/lib/actions/attendance";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -17,31 +18,28 @@ export default async function AtendimentoHomePage() {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Clientes</h1>
-          <p className="mt-2 text-muted-foreground max-w-2xl">
-            Selecione um cliente para ver projetos, cotações e atender demandas até a finalização.
-          </p>
-        </div>
-      </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Central de Clientes"
+        description="Atenda demandas, cotações e projetos de cada cliente até a finalização — mesmo sistema K&N, foco em atendimento."
+        icon={Headphones}
+      />
 
       {clientsWithStats.length === 0 ? (
         <Card className="kn-card p-8 text-center text-muted-foreground">
-          Nenhum cliente cadastrado. Adicione clientes em Gestão → Clientes.
+          Nenhum cliente cadastrado. Adicione em Gestão → Clientes ou aqui ao criar a primeira demanda.
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {clientsWithStats.map((client) => (
             <Link key={client.id} href={`/atendimento/clientes/${client.slug}`}>
-              <Card className="kn-card h-full transition-all hover:shadow-md hover:border-emerald-300/60 group">
+              <Card className="kn-card h-full transition-all hover:shadow-md group">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700">
+                    <div className="kn-kpi-icon">
                       <Users className="h-5 w-5" />
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-600 transition-colors" />
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                   <h2 className="mt-4 font-semibold text-lg">{client.name}</h2>
                   {client.company && (
@@ -61,10 +59,6 @@ export default async function AtendimentoHomePage() {
           ))}
         </div>
       )}
-
-      <p className="text-xs text-muted-foreground text-center">
-        Mesmos dados da gestão K&N — esta área é focada só em atender clientes.
-      </p>
     </div>
   );
 }

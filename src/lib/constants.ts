@@ -9,6 +9,7 @@ import {
   PieChart,
   FolderKanban,
   Settings,
+  Headphones,
 } from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
@@ -21,6 +22,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   PieChart,
   FolderKanban,
   Settings,
+  Headphones,
 };
 
 export const ICON_OPTIONS = Object.keys(ICON_MAP);
@@ -54,6 +56,12 @@ export const DEFAULT_MENUS = [
   { label: "Clientes", href: "/clientes", icon: "Users", groupLabel: "Navegação", sortOrder: 7 },
   { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 8 },
   { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 9 },
+  { label: "Atendimento a Clientes", href: "/atendimento", icon: "Headphones", groupLabel: "Atendimento", sortOrder: 10 },
+] as const;
+
+export const DEFAULT_ATENDIMENTO_MENUS = [
+  { label: "Central de Clientes", href: "/atendimento", icon: "Users", groupLabel: "Atendimento", sortOrder: 1 },
+  { label: "Gestão K&N", href: "/gestao", icon: "LayoutDashboard", groupLabel: "Sistema", sortOrder: 1 },
 ] as const;
 
 export const DEFAULT_CLASSIFICATIONS = [

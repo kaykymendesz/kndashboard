@@ -25,13 +25,13 @@ export default function PortalPage() {
             Escolha como deseja acessar
           </h1>
           <p className="mt-4 text-white/70 text-base md:text-lg leading-relaxed">
-            Selecione a área correta para continuar. Gestão interna e atendimento a clientes são ambientes separados.
+            Selecione o módulo do sistema K&N. Gestão interna e atendimento a clientes compartilham a mesma plataforma.
           </p>
         </div>
 
         <div className="grid gap-5 w-full max-w-3xl md:grid-cols-2">
           <Link
-            href="/login"
+            href="/login?callbackUrl=/gestao"
             className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
@@ -47,17 +47,17 @@ export default function PortalPage() {
           </Link>
 
           <Link
-            href="/atendimento"
-            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-emerald-400/40 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
+            href="/login?callbackUrl=/atendimento"
+            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-500/20 ring-1 ring-emerald-400/30 mb-6 group-hover:bg-emerald-500/30 transition-colors">
-              <Headphones className="h-7 w-7 text-emerald-100" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
+              <Headphones className="h-7 w-7" />
             </div>
             <h2 className="text-xl font-bold mb-2">Clientes e Atendimento</h2>
             <p className="text-sm text-white/65 leading-relaxed flex-1">
-              Área da equipe K&N para atender clientes — demandas, cotações e etapas até finalizar (ex: Zuki).
+              Mesmo sistema K&N — demandas, cotações e etapas por cliente até finalizar (ex: Zuki).
             </p>
-            <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-100 group-hover:gap-3 transition-all">
+            <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/90 group-hover:gap-3 transition-all">
               Ir para atendimento <ArrowRight className="h-4 w-4" />
             </span>
           </Link>

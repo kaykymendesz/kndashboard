@@ -57,17 +57,17 @@ export function NovaCotacaoForm({ client }: { client: Client }) {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="kn-page space-y-6 max-w-2xl">
       <Link
         href={`/atendimento/clientes/${client.slug}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-emerald-700"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> Voltar para {client.name}
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileText className="h-6 w-6 text-emerald-700" />
+          <FileText className="h-6 w-6 text-primary" />
           Nova cotação
         </h1>
         <p className="text-muted-foreground mt-1">Cliente: {client.name}</p>
@@ -106,7 +106,7 @@ export function NovaCotacaoForm({ client }: { client: Client }) {
               </Select>
             </div>
             <div className="flex gap-3 pt-2">
-              <Button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white" disabled={pending}>
+              <Button type="submit" className="kn-btn-primary" disabled={pending}>
                 {pending ? "Salvando..." : "Salvar cotação"}
               </Button>
             </div>

@@ -20,7 +20,7 @@ export function StartAttendanceButton({
   return (
     <Button
       size="sm"
-      className="bg-emerald-700 hover:bg-emerald-800 text-white gap-1"
+      className="kn-btn-primary gap-1"
       disabled={pending}
       onClick={() => {
         startTransition(async () => {
