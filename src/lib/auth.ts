@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { getAuthSecret } from "@/lib/auth-secret";
 
 const users = [
   {
@@ -27,6 +28,7 @@ async function verifyPassword(user: (typeof users)[0], password: string) {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: getAuthSecret(),
   providers: [
     Credentials({
       credentials: {
