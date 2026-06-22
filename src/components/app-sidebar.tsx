@@ -2,17 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Wallet,
-  ListTodo,
-  Calendar,
-  Users,
-  Building2,
-  PieChart,
-  LogOut,
-  ChevronRight,
-} from "lucide-react";
+import { LogOut, ChevronRight } from "lucide-react";
 import { signOut } from "next-auth/react";
 import {
   Sidebar,
@@ -32,16 +22,17 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { getIcon } from "@/lib/constants";
 
-const navItems = [
-  { href: "/", label: "Visão Geral", icon: LayoutDashboard },
-  { href: "/financeiro", label: "Financeiro", icon: PieChart },
-  { href: "/gastos", label: "Gastos", icon: Wallet },
-  { href: "/cronograma", label: "Cronograma", icon: Calendar },
-  { href: "/atividades", label: "Atividades", icon: ListTodo },
-  { href: "/clientes", label: "Clientes", icon: Users },
-  { href: "/projeto", label: "Dados da Empresa", icon: Building2 },
-];
+export type NavItem = {
+  id: number;
+  label: string;
+  href: string;
+  icon: string;
+  groupLabel: string | null;
+  sortOrder: number | null;
+  visible: boolean | null;
+};
 
 function getInitials(name?: string | null) {
   if (!name) return "KN";
@@ -53,8 +44,26 @@ function getInitials(name?: string | null) {
     .toUpperCase();
 }
 
-export function AppSidebar({ userName }: { userName?: string | null }) {
+function isNavActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function AppSidebar({
+  userName,
+  menuItems,
+}: {
+  userName?: string | null;
+  menuItems: NavItem[];
+}) {
   const pathname = usePathname();
+
+  const groups = menuItems.reduce<Record<string, NavItem[]>>((acc, item) => {
+    const key = item.groupLabel ?? "Navegação";
+    acc[key] = acc[key] ?? [];
+    acc[key].push(item);
+    return acc;
+  }, {});
 
   return (
     <Sidebar className="border-r-0">
@@ -70,37 +79,40 @@ export function AppSidebar({ userName }: { userName?: string | null }) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 px-2 mb-2">
-            Navegação
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      className={cn(
-                        "kn-sidebar-item h-10 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white",
-                        isActive && "kn-sidebar-item-active font-medium"
-                      )}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className={cn("h-4 w-4", isActive && "text-white")} />
-                        <span className="flex-1">{item.label}</span>
-                        {isActive && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="px-3 py-4 space-y-4">
+        {Object.entries(groups).map(([group, items]) => (
+          <SidebarGroup key={group}>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 px-2 mb-2">
+              {group}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {items.map((item) => {
+                  const Icon = getIcon(item.icon);
+                  const active = isNavActive(pathname, item.href);
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        className={cn(
+                          "kn-sidebar-item h-10 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white",
+                          active && "kn-sidebar-item-active font-medium"
+                        )}
+                      >
+                        <Link href={item.href}>
+                          <Icon className={cn("h-4 w-4", active && "text-white")} />
+                          <span className="flex-1">{item.label}</span>
+                          {active && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/50 p-4 space-y-3">
@@ -133,9 +145,11 @@ export function AppSidebar({ userName }: { userName?: string | null }) {
 export function DashboardShell({
   children,
   userName,
+  menuItems,
 }: {
   children: React.ReactNode;
   userName?: string | null;
+  menuItems: NavItem[];
 }) {
   const today = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -146,7 +160,7 @@ export function DashboardShell({
 
   return (
     <SidebarProvider>
-      <AppSidebar userName={userName} />
+      <AppSidebar userName={userName} menuItems={menuItems} />
       <main className="flex min-h-svh flex-1 flex-col bg-background">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b border-border/60 bg-white/80 backdrop-blur-md px-6 shadow-sm">
           <div className="flex items-center gap-3 min-w-0">

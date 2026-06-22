@@ -50,7 +50,17 @@ const emptyForm: ActivityInput = {
   notes: "",
 };
 
-function ActivityForm({ initial, onDone }: { initial?: Activity; onDone: () => void }) {
+function ActivityForm({
+  initial,
+  onDone,
+  statusOptions,
+  priorityOptions,
+}: {
+  initial?: Activity;
+  onDone: () => void;
+  statusOptions: string[];
+  priorityOptions: string[];
+}) {
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState<ActivityInput>(
     initial
@@ -111,7 +121,7 @@ function ActivityForm({ initial, onDone }: { initial?: Activity; onDone: () => v
           <Select value={form.status} onValueChange={(v) => set("status", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {["Funcionando", "Erro", "Ajuste", "Fazer", "Planejamento", "Em estudo", "Ideia", "Ativo", "A fazer"].map((s) => (
+              {statusOptions.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>
@@ -122,7 +132,7 @@ function ActivityForm({ initial, onDone }: { initial?: Activity; onDone: () => v
           <Select value={form.priority} onValueChange={(v) => set("priority", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {["Crítica", "Alta", "Média", "Baixa"].map((p) => (
+              {priorityOptions.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
             </SelectContent>
@@ -144,7 +154,17 @@ const statusColor = (status: string) => {
   return "secondary";
 };
 
-export function ActivitiesManager({ items }: { items: Activity[] }) {
+export function ActivitiesManager({
+  items,
+  projectName = "Wikinaya",
+  statusOptions = ["Funcionando", "Erro", "A fazer", "Planejamento"],
+  priorityOptions = ["Crítica", "Alta", "Média", "Baixa"],
+}: {
+  items: Activity[];
+  projectName?: string;
+  statusOptions?: string[];
+  priorityOptions?: string[];
+}) {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<Activity | null>(null);
   const [filter, setFilter] = useState("");
@@ -161,8 +181,8 @@ export function ActivitiesManager({ items }: { items: Activity[] }) {
   return (
     <div className="kn-page">
       <PageHeader
-        title="Atividades"
-        description={`${items.length} itens cadastrados — acompanhamento de funcionalidades e status do projeto.`}
+        title={`Atividades — ${projectName}`}
+        description={`${items.length} funcionalidades do projeto ${projectName}. Domínio e Play Store ficam em Projetos.`}
         icon={ListTodo}
       >
         <div className="flex gap-2">
@@ -173,7 +193,12 @@ export function ActivitiesManager({ items }: { items: Activity[] }) {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{editItem ? "Editar" : "Nova"} atividade</DialogTitle></DialogHeader>
-              <ActivityForm initial={editItem ?? undefined} onDone={() => setOpen(false)} />
+              <ActivityForm
+                initial={editItem ?? undefined}
+                onDone={() => setOpen(false)}
+                statusOptions={statusOptions}
+                priorityOptions={priorityOptions}
+              />
             </DialogContent>
           </Dialog>
         </div>

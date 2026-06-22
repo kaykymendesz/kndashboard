@@ -9,8 +9,21 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  description: text("description").default(""),
+  status: varchar("status", { length: 50 }).default("Ativo"),
+  color: varchar("color", { length: 20 }).default("#1e3a5f"),
+  notes: text("notes").default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const projectInfo = pgTable("project_info", {
   id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
   section: varchar("section", { length: 100 }).notNull(),
   field: varchar("field", { length: 200 }).notNull(),
   value: text("value").notNull().default(""),
@@ -21,6 +34,7 @@ export const projectInfo = pgTable("project_info", {
 
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
   externalId: varchar("external_id", { length: 20 }),
   area: varchar("area", { length: 100 }).notNull().default(""),
   feature: varchar("feature", { length: 200 }).notNull().default(""),
@@ -35,6 +49,7 @@ export const activities = pgTable("activities", {
 
 export const scheduleItems = pgTable("schedule_items", {
   id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
   plannedDate: timestamp("planned_date"),
   title: varchar("title", { length: 300 }).notNull(),
   category: varchar("category", { length: 100 }).default(""),
@@ -51,6 +66,7 @@ export const scheduleItems = pgTable("schedule_items", {
 
 export const expenses = pgTable("expenses", {
   id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
   description: varchar("description", { length: 300 }).notNull(),
   category: varchar("category", { length: 100 }).default(""),
   vendor: varchar("vendor", { length: 200 }).default(""),
@@ -94,8 +110,35 @@ export const clients = pgTable("clients", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const menuItems = pgTable("menu_items", {
+  id: serial("id").primaryKey(),
+  label: varchar("label", { length: 100 }).notNull(),
+  href: varchar("href", { length: 200 }).notNull(),
+  icon: varchar("icon", { length: 50 }).notNull().default("LayoutDashboard"),
+  groupLabel: varchar("group_label", { length: 100 }).default("Navegação"),
+  sortOrder: integer("sort_order").default(0),
+  visible: boolean("visible").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const classifications = pgTable("classifications", {
+  id: serial("id").primaryKey(),
+  type: varchar("type", { length: 50 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  color: varchar("color", { length: 20 }).default("#1e3a5f"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Project = typeof projects.$inferSelect;
 export type ProjectInfo = typeof projectInfo.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type ScheduleItem = typeof scheduleItems.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
 export type Client = typeof clients.$inferSelect;
+export type MenuItem = typeof menuItems.$inferSelect;
+export type Classification = typeof classifications.$inferSelect;
+
+export const WIKINAYA_SLUG = "wikinaya";

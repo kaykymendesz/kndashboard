@@ -15,6 +15,7 @@ export type ExpenseInput = {
   totalValue: string;
   elaineShare?: string;
   kaykyShare?: string;
+  projectId?: number | null;
   isInstallment?: boolean;
   installmentCount?: string;
   installmentValue?: string;
@@ -61,6 +62,7 @@ function mapExpenseInput(input: ExpenseInput) {
     autoRenew: input.autoRenew ?? false,
     expirationDate: parseDate(input.expirationDate ?? ""),
     registeredBy: input.registeredBy ?? "",
+    projectId: input.projectId ?? null,
     updatedAt: new Date(),
   };
 }
@@ -69,6 +71,7 @@ export async function createExpense(input: ExpenseInput) {
   await db.insert(expenses).values(mapExpenseInput(input));
   revalidatePath("/gastos");
   revalidatePath("/financeiro");
+  revalidatePath("/projetos");
   revalidatePath("/");
 }
 
@@ -76,6 +79,7 @@ export async function updateExpense(id: number, input: ExpenseInput) {
   await db.update(expenses).set(mapExpenseInput(input)).where(eq(expenses.id, id));
   revalidatePath("/gastos");
   revalidatePath("/financeiro");
+  revalidatePath("/projetos");
   revalidatePath("/");
 }
 
@@ -83,6 +87,7 @@ export async function deleteExpense(id: number) {
   await db.delete(expenses).where(eq(expenses.id, id));
   revalidatePath("/gastos");
   revalidatePath("/financeiro");
+  revalidatePath("/projetos");
   revalidatePath("/");
 }
 

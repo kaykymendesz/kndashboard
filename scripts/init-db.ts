@@ -90,6 +90,45 @@ async function main() {
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
   )`;
 
+  await sql`CREATE TABLE IF NOT EXISTS projects (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT DEFAULT '',
+    status VARCHAR(50) DEFAULT 'Ativo',
+    color VARCHAR(20) DEFAULT '#1e3a5f',
+    notes TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+  )`;
+
+  await sql`CREATE TABLE IF NOT EXISTS menu_items (
+    id SERIAL PRIMARY KEY,
+    label VARCHAR(100) NOT NULL,
+    href VARCHAR(200) NOT NULL,
+    icon VARCHAR(50) NOT NULL DEFAULT 'LayoutDashboard',
+    group_label VARCHAR(100) DEFAULT 'Navegação',
+    sort_order INTEGER DEFAULT 0,
+    visible BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+  )`;
+
+  await sql`CREATE TABLE IF NOT EXISTS classifications (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    color VARCHAR(20) DEFAULT '#1e3a5f',
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+  )`;
+
+  await sql`ALTER TABLE project_info ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES projects(id)`;
+  await sql`ALTER TABLE activities ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES projects(id)`;
+  await sql`ALTER TABLE expenses ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES projects(id)`;
+  await sql`ALTER TABLE schedule_items ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES projects(id)`;
+
   console.log("Tabelas OK.");
 }
 

@@ -71,7 +71,15 @@ function ProjectForm({ initial, onDone }: { initial?: ProjectInfo; onDone: () =>
   );
 }
 
-export function ProjectInfoManager({ items }: { items: ProjectInfo[] }) {
+export function ProjectInfoManager({
+  items,
+  title = "Dados da Empresa",
+  description = "Informações jurídicas, marca, infraestrutura e estrutura organizacional.",
+}: {
+  items: ProjectInfo[];
+  title?: string;
+  description?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<ProjectInfo | null>(null);
   const [pending, startTransition] = useTransition();
@@ -85,11 +93,7 @@ export function ProjectInfoManager({ items }: { items: ProjectInfo[] }) {
 
   return (
     <div className="kn-page">
-      <PageHeader
-        title="Dados da Empresa"
-        description="Informações jurídicas, marca, infraestrutura e estrutura organizacional."
-        icon={Building2}
-      >
+      <PageHeader title={title} description={description} icon={Building2}>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditItem(null); }}>
           <DialogTrigger asChild>
             <Button className="kn-btn-primary gap-2"><Plus className="h-4 w-4" />Novo registro</Button>

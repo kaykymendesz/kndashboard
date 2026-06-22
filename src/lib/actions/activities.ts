@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { activities } from "@/lib/db/schema";
+import { activities, projects, WIKINAYA_SLUG } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -14,11 +14,20 @@ export type ActivityInput = {
   priority: string;
   responsible?: string;
   notes?: string;
+  projectId?: number;
 };
 
-function mapActivityInput(input: ActivityInput) {
+async function getWikinayaId() {
+  const p = await db.query.projects.findFirst({
+    where: eq(projects.slug, WIKINAYA_SLUG),
+  });
+  return p?.id ?? null;
+}
+
+function mapActivityInput(input: ActivityInput, projectId?: number | null) {
   return {
     ...input,
+    projectId: input.projectId ?? projectId,
     description: input.description ?? "",
     responsible: input.responsible ?? "",
     notes: input.notes ?? "",
@@ -27,23 +36,42 @@ function mapActivityInput(input: ActivityInput) {
 }
 
 export async function createActivity(input: ActivityInput) {
-  await db.insert(activities).values(mapActivityInput(input));
+  const wikinayaId = await getWikinayaId();
+  await db.insert(activities).values(mapActivityInput(input, wikinayaId));
   revalidatePath("/atividades");
+  revalidatePath("/projetos");
   revalidatePath("/");
 }
 
 export async function updateActivity(id: number, input: ActivityInput) {
-  await db.update(activities).set(mapActivityInput(input)).where(eq(activities.id, id));
+  const wikinayaId = await getWikinayaId();
+  await db.update(activities).set(mapActivityInput(input, wikinayaId)).where(eq(activities.id, id));
   revalidatePath("/atividades");
+  revalidatePath("/projetos");
   revalidatePath("/");
 }
 
 export async function deleteActivity(id: number) {
   await db.delete(activities).where(eq(activities.id, id));
   revalidatePath("/atividades");
+  revalidatePath("/projetos");
   revalidatePath("/");
 }
 
-export async function getActivities() {
+export async function getActivities(projectSlug?: string) {
+  if (projectSlug) {
+    const project = await db.query.projects.findFirst({
+      where: eq(projects.slug, projectSlug),
+    });
+    if (!project) return [];
+    return db.query.activities.findMany({
+      where: eq(activities.projectId, project.id),
+      orderBy: (a, { asc }) => [asc(a.externalId)],
+    });
+  }
   return db.query.activities.findMany({ orderBy: (a, { asc }) => [asc(a.externalId)] });
+}
+
+export async function getWikinayaActivities() {
+  return getActivities(WIKINAYA_SLUG);
 }
