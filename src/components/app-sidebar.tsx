@@ -17,6 +17,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -57,6 +58,11 @@ export function AppSidebar({
   menuItems: NavItem[];
 }) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const closeMobileMenu = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   const groups = menuItems.reduce<Record<string, NavItem[]>>((acc, item) => {
     const key = item.groupLabel ?? "Navegação";
@@ -96,11 +102,11 @@ export function AppSidebar({
                         asChild
                         isActive={active}
                         className={cn(
-                          "kn-sidebar-item h-10 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white",
+                          "kn-sidebar-item h-10 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white max-md:h-11 max-md:text-[15px]",
                           active && "kn-sidebar-item-active font-medium"
                         )}
                       >
-                        <Link href={item.href}>
+                        <Link href={item.href} onClick={closeMobileMenu}>
                           <Icon className={cn("h-4 w-4", active && "text-white")} />
                           <span className="flex-1">{item.label}</span>
                           {active && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
@@ -131,7 +137,7 @@ export function AppSidebar({
         )}
         <Button
           variant="ghost"
-          className="w-full justify-start gap-2 h-9 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white transition-colors"
+          className="w-full justify-start gap-2 h-9 max-md:h-11 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white transition-colors"
           onClick={() => signOut({ callbackUrl: "/login" })}
         >
           <LogOut className="h-4 w-4" />
@@ -161,11 +167,15 @@ export function DashboardShell({
   return (
     <SidebarProvider>
       <AppSidebar userName={userName} menuItems={menuItems} />
-      <main className="flex min-h-svh flex-1 flex-col bg-background">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b border-border/60 bg-white/80 backdrop-blur-md px-6 shadow-sm">
-          <div className="flex items-center gap-3 min-w-0">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
+      <main className="flex min-h-svh flex-1 flex-col bg-background max-md:min-h-dvh">
+        <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center justify-between gap-3 border-b border-border/60 bg-white/80 backdrop-blur-md px-4 md:px-6 shadow-sm max-md:pt-[env(safe-area-inset-top)]">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0" />
             <Separator orientation="vertical" className="h-5 hidden sm:block" />
+            <div className="min-w-0 flex-1 md:hidden">
+              <p className="text-sm font-semibold text-foreground truncate">K&N Dashboard</p>
+              <p className="text-[11px] text-muted-foreground truncate capitalize">{today.split(",")[0]}</p>
+            </div>
             <div className="hidden sm:block min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">
                 {COMPANY_LEGAL_NAME}
@@ -173,13 +183,15 @@ export function DashboardShell({
               <p className="text-xs text-muted-foreground capitalize truncate">{today}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="hidden md:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               Painel Gerencial
             </span>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-6 lg:p-8">{children}</div>
+        <div className="flex-1 overflow-auto overflow-x-hidden p-4 md:p-6 lg:p-8 max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {children}
+        </div>
       </main>
     </SidebarProvider>
   );

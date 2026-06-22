@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/sonner";
+import { MobileToaster } from "@/components/mobile-toaster";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -21,6 +21,18 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "K&N Dashboard | Gestão Empresarial",
   description: "Painel de gestão K&N Desenvolvimento de Software — Elaine & Kayky",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "K&N Dashboard",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#1a2744",
 };
 
 export default function RootLayout({
@@ -34,7 +46,7 @@ export default function RootLayout({
         <Providers>
           <TooltipProvider>
             {children}
-            <Toaster richColors position="top-right" />
+            <MobileToaster />
           </TooltipProvider>
         </Providers>
       </body>

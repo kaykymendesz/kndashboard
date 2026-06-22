@@ -177,3 +177,75 @@
     @apply rounded-xl border border-border/60 bg-gradient-to-br from-white to-muted/30 p-5 shadow-sm;
   }
 }
+
+/* Mobile only — Android & iPhone (desktop unchanged) */
+@media (max-width: 767px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .kn-page {
+    @apply space-y-5;
+  }
+
+  .kn-card-header {
+    @apply px-4 py-3;
+  }
+
+  .kn-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .kn-table-wrap table {
+    min-width: 640px;
+  }
+
+  .kn-page [data-slot="tabs-list"] {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .kn-page [data-slot="tabs-list"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kn-page [data-slot="tabs-trigger"] {
+    flex-shrink: 0;
+    min-height: 2.5rem;
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  form .grid.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  [data-slot="dialog-content"] [data-slot="dialog-close"] {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .kn-page .kn-row-hover {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}

@@ -211,7 +211,7 @@ export function ExpensesManager({ items }: { items: Expense[] }) {
         </Dialog>
       </PageHeader>
 
-      <div className="kn-table-wrap">
+      <div className="kn-table-wrap overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

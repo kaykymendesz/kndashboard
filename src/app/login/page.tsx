@@ -76,7 +76,7 @@ export default function LoginPage() {
       </div>
 
       {/* Painel direito — login */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-background p-6 sm:p-12">
+      <div className="flex flex-1 flex-col items-center justify-center bg-background p-6 sm:p-12 max-md:px-4 max-md:pb-[max(1.5rem,env(safe-area-inset-bottom))] max-md:pt-[max(1.5rem,env(safe-area-inset-top))]">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center gap-3 mb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white text-sm font-bold">

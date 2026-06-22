@@ -29,7 +29,7 @@ export function FinancialCharts({ monthlyData, categoryData }: Props) {
         <CardHeader className="kn-card-header py-4">
           <CardTitle className="text-sm font-semibold">Gastos por mês</CardTitle>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-72 max-md:h-56">
           {monthlyData.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
           ) : (
@@ -50,7 +50,7 @@ export function FinancialCharts({ monthlyData, categoryData }: Props) {
         <CardHeader className="kn-card-header py-4">
           <CardTitle className="text-sm font-semibold">Gastos por categoria</CardTitle>
         </CardHeader>
-        <CardContent className="h-72">
+        <CardContent className="h-72 max-md:h-56">
           {categoryData.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
           ) : (

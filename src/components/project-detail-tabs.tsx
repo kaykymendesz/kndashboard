@@ -63,9 +63,9 @@ export function ProjectDetailTabs({
       </div>
 
       <PageHeader title={project.name} description={project.description ?? ""} icon={FolderKanban}>
-        <div className="text-right">
+        <div className="text-right max-md:text-left max-md:w-full">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">Total investido</p>
-          <p className="text-2xl font-bold text-primary tabular-nums">{formatCurrency(totalSpent)}</p>
+          <p className="text-2xl font-bold text-primary tabular-nums max-md:text-xl">{formatCurrency(totalSpent)}</p>
         </div>
       </PageHeader>
 
