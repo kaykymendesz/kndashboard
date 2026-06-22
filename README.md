@@ -63,12 +63,23 @@ Acesse [http://localhost:3000](http://localhost:3000) e faça login.
 
 1. Faça push para [github.com/kaykymendesz/kndashboard](https://github.com/kaykymendesz/kndashboard)
 2. Importe o repositório na [Vercel](https://vercel.com/new)
-3. Adicione as variáveis de ambiente (mesmas do `.env.local`)
-4. Instale a integração **Neon** no Marketplace da Vercel (provisiona `DATABASE_URL` automaticamente)
-5. Após o deploy, rode o seed uma vez:
+3. **Configure estas variáveis** em Project → Settings → Environment Variables:
+
+| Variável | Onde pegar |
+|----------|------------|
+| `DATABASE_URL` | Neon → Connection string (`postgresql://...`) |
+| `AUTH_SECRET` | Gere com `openssl rand -base64 32` |
+| `AUTH_ELAINE_EMAIL` / `AUTH_ELAINE_PASSWORD` | Login da Elaine |
+| `AUTH_KAYKY_EMAIL` / `AUTH_KAYKY_PASSWORD` | Login do Kayky |
+
+> **Atenção:** `KNDASHBOARD_NEON_AUTH_BASE_URL` é do **Neon Auth** (serviço de login), **não** substitui `DATABASE_URL`. O app precisa da connection string Postgres.
+
+4. Marque as variáveis para **Production**, **Preview** e **Development**
+5. Faça **Redeploy** após salvar
+6. Crie as tabelas e importe os dados (uma vez):
 
 ```bash
-# Com DATABASE_URL de produção configurada localmente:
+# Cole a DATABASE_URL de produção no .env.local temporariamente:
 npm run db:push
 npm run db:seed
 ```

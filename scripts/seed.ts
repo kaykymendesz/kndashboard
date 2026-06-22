@@ -4,8 +4,9 @@ import path from "path";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "../src/lib/db/schema";
+import { getDatabaseUrl } from "../src/lib/db/env";
 
-const sql = neon(process.env.DATABASE_URL!);
+const sql = neon(getDatabaseUrl());
 const db = drizzle(sql, { schema });
 
 type SpreadsheetData = Record<
