@@ -79,7 +79,7 @@ export function AppSidebar({
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4 space-y-4">
+      <SidebarContent className="px-3 py-4 space-y-4 min-h-0">
         {Object.entries(groups).map(([group, items]) => (
           <SidebarGroup key={group}>
             <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 px-2 mb-2">
