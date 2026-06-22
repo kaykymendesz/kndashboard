@@ -34,19 +34,19 @@ function mapClientInput(input: ClientInput) {
 export async function createClient(input: ClientInput) {
   await db.insert(clients).values(mapClientInput(input));
   revalidatePath("/clientes");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function updateClient(id: number, input: ClientInput) {
   await db.update(clients).set(mapClientInput(input)).where(eq(clients.id, id));
   revalidatePath("/clientes");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function deleteClient(id: number) {
   await db.delete(clients).where(eq(clients.id, id));
   revalidatePath("/clientes");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function getClients() {

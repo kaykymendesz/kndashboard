@@ -41,7 +41,7 @@ export async function createActivity(input: ActivityInput) {
   revalidatePath("/atividades");
   revalidatePath("/projetos/wikinaya");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function updateActivity(id: number, input: ActivityInput) {
@@ -50,7 +50,7 @@ export async function updateActivity(id: number, input: ActivityInput) {
   revalidatePath("/atividades");
   revalidatePath("/projetos/wikinaya");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function deleteActivity(id: number) {
@@ -58,7 +58,7 @@ export async function deleteActivity(id: number) {
   revalidatePath("/atividades");
   revalidatePath("/projetos/wikinaya");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function getActivities(projectSlug?: string) {

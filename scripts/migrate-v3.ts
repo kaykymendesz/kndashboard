@@ -121,6 +121,8 @@ async function main() {
     console.log("Fluxo padrão de processos criado.");
   }
 
+  await sql`UPDATE menu_items SET href = '/gestao' WHERE href = '/' AND label ILIKE '%visão%'`;
+
   console.log("Migração v3 concluída.");
 }
 

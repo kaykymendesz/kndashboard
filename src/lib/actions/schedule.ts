@@ -60,7 +60,7 @@ export async function createScheduleItem(input: ScheduleInput) {
   }
 
   revalidatePath("/cronograma");
-  revalidatePath("/");
+  revalidatePath("/gestao");
   return item;
 }
 
@@ -68,13 +68,13 @@ export async function updateScheduleItem(id: number, input: ScheduleInput) {
   await db.update(scheduleItems).set(mapScheduleInput(input)).where(eq(scheduleItems.id, id));
   revalidatePath("/cronograma");
   revalidatePath(`/cronograma/${id}`);
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function deleteScheduleItem(id: number) {
   await db.delete(scheduleItems).where(eq(scheduleItems.id, id));
   revalidatePath("/cronograma");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function getScheduleItems() {

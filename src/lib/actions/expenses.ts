@@ -80,7 +80,7 @@ export async function createExpense(input: ExpenseInput) {
   revalidatePath("/gastos");
   revalidatePath("/financeiro");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
   return row;
 }
 
@@ -90,7 +90,7 @@ export async function updateExpense(id: number, input: ExpenseInput) {
   revalidatePath(`/gastos/${id}`);
   revalidatePath("/financeiro");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function deleteExpense(id: number) {
@@ -98,7 +98,7 @@ export async function deleteExpense(id: number) {
   revalidatePath("/gastos");
   revalidatePath("/financeiro");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function getExpenses() {

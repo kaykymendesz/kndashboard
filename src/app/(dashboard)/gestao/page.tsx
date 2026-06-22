@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OverviewExpenseSections } from "@/components/overview-expense-sections";
 
-export default async function HomePage() {
+export default async function GestaoHomePage() {
   const stats = await getDashboardStats();
 
   return (

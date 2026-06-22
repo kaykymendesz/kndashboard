@@ -45,7 +45,7 @@ export const COMPANY_LEGAL_NAME = "K&N Desenvolvimento de Software LTDA";
 export const COMPANY_SHORT_NAME = "K&N Desenvolvimento de Software";
 
 export const DEFAULT_MENUS = [
-  { label: "Visão Geral", href: "/", icon: "LayoutDashboard", groupLabel: "Navegação", sortOrder: 1 },
+  { label: "Visão Geral", href: "/gestao", icon: "LayoutDashboard", groupLabel: "Navegação", sortOrder: 1 },
   { label: "Financeiro", href: "/financeiro", icon: "PieChart", groupLabel: "Navegação", sortOrder: 2 },
   { label: "Gastos", href: "/gastos", icon: "Wallet", groupLabel: "Navegação", sortOrder: 3 },
   { label: "Projeto Wikinaya", href: "/projetos/wikinaya", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 4 },

@@ -5,7 +5,8 @@ import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Lock, Mail, Shield } from "lucide-react";
+import { ArrowLeft, Building2, Lock, Mail, Shield } from "lucide-react";
+import Link from "next/link";
 import { COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export default function LoginPage() {
@@ -28,7 +29,9 @@ export default function LoginPage() {
       setError("E-mail ou senha incorretos.");
       return;
     }
-    window.location.href = "/";
+    const params = new URLSearchParams(window.location.search);
+    const callbackUrl = params.get("callbackUrl") || "/gestao";
+    window.location.href = callbackUrl.startsWith("/") && !["/", "/login", "/atendimento"].includes(callbackUrl) ? callbackUrl : "/gestao";
   };
 
   return (
@@ -78,6 +81,10 @@ export default function LoginPage() {
       {/* Painel direito — login */}
       <div className="flex flex-1 flex-col items-center justify-center bg-background p-6 sm:p-12 max-md:px-4 max-md:pb-[max(1.5rem,env(safe-area-inset-bottom))] max-md:pt-[max(1.5rem,env(safe-area-inset-top))]">
         <div className="w-full max-w-md space-y-8">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+            <ArrowLeft className="h-3.5 w-3.5" /> Voltar à escolha de área
+          </Link>
+
           <div className="lg:hidden flex items-center gap-3 mb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white text-sm font-bold">
               K&N

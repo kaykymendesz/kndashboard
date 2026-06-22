@@ -46,6 +46,7 @@ function getInitials(name?: string | null) {
 }
 
 function isNavActive(pathname: string, href: string) {
+  if (href === "/gestao") return pathname === "/gestao";
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -135,10 +136,16 @@ export function AppSidebar({
             </div>
           </div>
         )}
+        <Link
+          href="/"
+          className="w-full justify-start gap-2 h-9 max-md:h-11 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white transition-colors flex items-center px-3 rounded-lg text-sm mb-1"
+        >
+          Trocar área
+        </Link>
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 h-9 max-md:h-11 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white transition-colors"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="h-4 w-4" />
           Sair do sistema

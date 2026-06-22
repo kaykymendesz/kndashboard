@@ -20,7 +20,7 @@ export async function createProjectInfo(input: ProjectInfoInput) {
   });
   revalidatePath("/projeto");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function updateProjectInfo(id: number, input: ProjectInfoInput) {
@@ -30,14 +30,14 @@ export async function updateProjectInfo(id: number, input: ProjectInfoInput) {
     .where(eq(projectInfo.id, id));
   revalidatePath("/projeto");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function deleteProjectInfo(id: number) {
   await db.delete(projectInfo).where(eq(projectInfo.id, id));
   revalidatePath("/projeto");
   revalidatePath("/projetos");
-  revalidatePath("/");
+  revalidatePath("/gestao");
 }
 
 export async function getProjectInfo(projectId?: number | null) {
