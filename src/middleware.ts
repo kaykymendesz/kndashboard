@@ -1,12 +1,10 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const PUBLIC_PATHS = ["/", "/login", "/atendimento"];
+const PUBLIC_PATHS = ["/", "/login"];
 
 function isPublicPath(pathname: string) {
-  if (PUBLIC_PATHS.includes(pathname)) return true;
-  if (pathname.startsWith("/atendimento/")) return true;
-  return false;
+  return PUBLIC_PATHS.includes(pathname);
 }
 
 export default auth((req) => {

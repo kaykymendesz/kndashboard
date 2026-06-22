@@ -1,79 +1,70 @@
 import Link from "next/link";
-import { MessageCircle, Mail, Clock, CheckCircle2, ArrowLeft } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { COMPANY_LEGAL_NAME } from "@/lib/constants";
+import { Users, ChevronRight } from "lucide-react";
+import { getClients } from "@/lib/actions/clients";
+import { getAttendanceCasesByClient } from "@/lib/actions/attendance";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-const services = [
-  {
-    icon: MessageCircle,
-    title: "Suporte técnico",
-    description: "Dúvidas sobre projetos em andamento, apps e entregas da K&N.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Acompanhamento",
-    description: "Status de solicitações, prazos e próximos passos do seu projeto.",
-  },
-  {
-    icon: Clock,
-    title: "Novas demandas",
-    description: "Abertura de chamados para melhorias, correções ou novos desenvolvimentos.",
-  },
-];
+export default async function AtendimentoHomePage() {
+  const clients = await getClients();
 
-export default function AtendimentoPage() {
+  const clientsWithStats = await Promise.all(
+    clients.map(async (c) => {
+      const demands = await getAttendanceCasesByClient(c.id);
+      const open = demands.filter((d) => d.status !== "Finalizado" && d.status !== "Cancelado").length;
+      return { ...c, open, total: demands.length };
+    })
+  );
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-          Central de Atendimento K&N
-        </h1>
-        <p className="mt-2 text-muted-foreground max-w-2xl leading-relaxed">
-          Bem-vindo à área de clientes da {COMPANY_LEGAL_NAME}. Aqui você acompanha suporte e solicitações — separado do painel interno de gestão.
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        {services.map(({ icon: Icon, title, description }) => (
-          <Card key={title} className="kn-card">
-            <CardHeader className="pb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700 mb-2">
-                <Icon className="h-5 w-5" />
-              </div>
-              <CardTitle className="text-base">{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="kn-card border-emerald-200/60 bg-gradient-to-br from-emerald-50/50 to-white">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Mail className="h-5 w-5 text-emerald-700" />
-            Fale com a K&N
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Para abrir um atendimento ou consultar seu projeto, entre em contato com nossa equipe. Em breve esta área terá login e chamados online.
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Clientes</h1>
+          <p className="mt-2 text-muted-foreground max-w-2xl">
+            Selecione um cliente para ver projetos, cotações e atender demandas até a finalização.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild className="bg-emerald-700 hover:bg-emerald-800 text-white gap-2">
-              <a href="mailto:contato@kn.dev">contato@kn.dev</a>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar à escolha de área
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {clientsWithStats.length === 0 ? (
+        <Card className="kn-card p-8 text-center text-muted-foreground">
+          Nenhum cliente cadastrado. Adicione clientes em Gestão → Clientes.
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {clientsWithStats.map((client) => (
+            <Link key={client.id} href={`/atendimento/clientes/${client.slug}`}>
+              <Card className="kn-card h-full transition-all hover:shadow-md hover:border-emerald-300/60 group">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-600 transition-colors" />
+                  </div>
+                  <h2 className="mt-4 font-semibold text-lg">{client.name}</h2>
+                  {client.company && (
+                    <p className="text-sm text-muted-foreground">{client.company}</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {client.open > 0 && (
+                      <Badge className="bg-amber-500/15 text-amber-800 border-amber-200">
+                        {client.open} em aberto
+                      </Badge>
+                    )}
+                    <Badge variant="secondary">{client.total} demanda(s)</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground text-center">
+        Mesmos dados da gestão K&N — esta área é focada só em atender clientes.
+      </p>
     </div>
   );
 }

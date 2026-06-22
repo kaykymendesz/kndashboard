@@ -105,6 +105,7 @@ export const expenses = pgTable("expenses", {
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 200 }).notNull(),
+  slug: varchar("slug", { length: 120 }).unique(),
   company: varchar("company", { length: 200 }).default(""),
   email: varchar("email", { length: 200 }).default(""),
   phone: varchar("phone", { length: 50 }).default(""),
@@ -177,6 +178,54 @@ export const scheduleProcesses = pgTable("schedule_processes", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const quotations = pgTable("quotations", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 300 }).notNull(),
+  description: text("description").default(""),
+  value: numeric("value", { precision: 12, scale: 2 }).default("0"),
+  status: varchar("status", { length: 50 }).default("Rascunho"),
+  validUntil: timestamp("valid_until"),
+  notes: text("notes").default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const attendanceCases = pgTable("attendance_cases", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  quotationId: integer("quotation_id").references(() => quotations.id),
+  title: varchar("title", { length: 300 }).notNull(),
+  description: text("description").default(""),
+  demandType: varchar("demand_type", { length: 50 }).default("Novo projeto"),
+  status: varchar("status", { length: 50 }).default("Aguardando"),
+  responsible: varchar("responsible", { length: 100 }).default(""),
+  notes: text("notes").default(""),
+  attendedAt: timestamp("attended_at"),
+  finishedAt: timestamp("finished_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const attendanceSteps = pgTable("attendance_steps", {
+  id: serial("id").primaryKey(),
+  caseId: integer("case_id")
+    .notNull()
+    .references(() => attendanceCases.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 200 }).notNull(),
+  category: varchar("category", { length: 100 }).default(""),
+  status: varchar("status", { length: 50 }).default("Pendente"),
+  notes: text("notes").default(""),
+  sortOrder: integer("sort_order").default(0),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type Project = typeof projects.$inferSelect;
 export type ProjectInfo = typeof projectInfo.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
@@ -188,10 +237,26 @@ export type Classification = typeof classifications.$inferSelect;
 export type ProcessFlow = typeof processFlows.$inferSelect;
 export type ProcessStep = typeof processSteps.$inferSelect;
 export type ScheduleProcess = typeof scheduleProcesses.$inferSelect;
+export type Quotation = typeof quotations.$inferSelect;
+export type AttendanceCase = typeof attendanceCases.$inferSelect;
+export type AttendanceStep = typeof attendanceSteps.$inferSelect;
 
 export const EXPENSE_TYPES = ["Anual", "Mensal", "Único"] as const;
 export type ExpenseType = (typeof EXPENSE_TYPES)[number];
 
 export const PROCESS_STATUSES = ["Pendente", "Em andamento", "Concluído", "Cancelado"] as const;
+
+export const ATTENDANCE_STATUSES = ["Aguardando", "Em atendimento", "Finalizado", "Cancelado"] as const;
+export const ATTENDANCE_TYPES = ["Novo projeto", "Cotação", "Suporte", "Melhoria"] as const;
+export const QUOTATION_STATUSES = ["Rascunho", "Enviada", "Aprovada", "Recusada"] as const;
+
+export const DEFAULT_ATTENDANCE_STEPS = [
+  { name: "Receber demanda", category: "Análise", sortOrder: 1 },
+  { name: "Levantamento de requisitos", category: "Análise", sortOrder: 2 },
+  { name: "Elaborar cotação", category: "Documentação", sortOrder: 3 },
+  { name: "Aprovação do cliente", category: "Aprovação", sortOrder: 4 },
+  { name: "Execução do projeto", category: "Execução", sortOrder: 5 },
+  { name: "Entrega e finalização", category: "Aprovação", sortOrder: 6 },
+] as const;
 
 export const WIKINAYA_SLUG = "wikinaya";

@@ -55,7 +55,7 @@ export default function PortalPage() {
             </div>
             <h2 className="text-xl font-bold mb-2">Clientes e Atendimento</h2>
             <p className="text-sm text-white/65 leading-relaxed flex-1">
-              Área de atendimento K&N — suporte, solicitações e acompanhamento para clientes e parceiros.
+              Área da equipe K&N para atender clientes — demandas, cotações e etapas até finalizar (ex: Zuki).
             </p>
             <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-emerald-100 group-hover:gap-3 transition-all">
               Ir para atendimento <ArrowRight className="h-4 w-4" />
