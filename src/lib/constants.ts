@@ -34,6 +34,7 @@ export const CLASSIFICATION_TYPES = [
   { value: "activity_status", label: "Status de atividade" },
   { value: "activity_priority", label: "Prioridade de atividade" },
   { value: "schedule_status", label: "Status do cronograma" },
+  { value: "process_category", label: "Categoria de processo" },
   { value: "project_status", label: "Status de projeto" },
   { value: "client_status", label: "Status de cliente" },
 ] as const;
@@ -69,4 +70,7 @@ export const DEFAULT_CLASSIFICATIONS = [
   { type: "activity_priority", name: "Alta", color: "#f59e0b", sortOrder: 2 },
   { type: "activity_priority", name: "Média", color: "#3b82f6", sortOrder: 3 },
   { type: "activity_priority", name: "Baixa", color: "#94a3b8", sortOrder: 4 },
+  { type: "schedule_status", name: "Concluído", color: "#16a34a", sortOrder: 5 },
+  { type: "process_category", name: "Análise", color: "#2563eb", sortOrder: 1 },
+  { type: "process_category", name: "Execução", color: "#3b82f6", sortOrder: 2 },
 ] as const;

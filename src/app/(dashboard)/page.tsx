@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { OverviewExpenseSections } from "@/components/overview-expense-sections";
 
 export default async function HomePage() {
   const stats = await getDashboardStats();
@@ -52,6 +53,14 @@ export default async function HomePage() {
           <StatCard title="Cronograma previsto" value={formatCurrency(stats.schedulePlanned)} icon={Calendar} />
         </div>
       </section>
+
+      <OverviewExpenseSections
+        knTotal={stats.totalInvested}
+        expensesByPartner={stats.expensesByPartner}
+        expensesByProject={stats.expensesByProject}
+        expensesByClient={stats.expensesByClient}
+        expensesByType={stats.expensesByType}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="kn-card">

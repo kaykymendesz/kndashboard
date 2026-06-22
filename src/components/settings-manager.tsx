@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2, Settings, Menu, Tags, FolderKanban } from "lucide-react";
+import { Plus, Pencil, Trash2, Settings, Menu, Tags, FolderKanban, GitBranch } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -44,14 +44,18 @@ import {
 import { createProject, updateProject, deleteProject, type ProjectInput } from "@/lib/actions/projects";
 import type { MenuItem, Classification, Project } from "@/lib/db/schema";
 import { CLASSIFICATION_TYPES, ICON_OPTIONS, getIcon } from "@/lib/constants";
+import { ProcessFlowsTab } from "@/components/process-flows-tab";
+import type { ProcessFlow, ProcessStep } from "@/lib/db/schema";
 
 type Props = {
   menus: MenuItem[];
   classifications: Classification[];
   projects: Project[];
+  flowsWithSteps: { flow: ProcessFlow; steps: ProcessStep[] }[];
+  processCategories: string[];
 };
 
-export function SettingsManager({ menus, classifications, projects }: Props) {
+export function SettingsManager({ menus, classifications, projects, flowsWithSteps, processCategories }: Props) {
   return (
     <div className="kn-page">
       <PageHeader
@@ -65,6 +69,7 @@ export function SettingsManager({ menus, classifications, projects }: Props) {
           <TabsTrigger value="menus" className="gap-2"><Menu className="h-4 w-4" />Menus</TabsTrigger>
           <TabsTrigger value="classifications" className="gap-2"><Tags className="h-4 w-4" />Classificações</TabsTrigger>
           <TabsTrigger value="projects" className="gap-2"><FolderKanban className="h-4 w-4" />Projetos</TabsTrigger>
+          <TabsTrigger value="flows" className="gap-2"><GitBranch className="h-4 w-4" />Fluxos de processo</TabsTrigger>
         </TabsList>
 
         <TabsContent value="menus">
@@ -75,6 +80,9 @@ export function SettingsManager({ menus, classifications, projects }: Props) {
         </TabsContent>
         <TabsContent value="projects">
           <ProjectsTab items={projects} />
+        </TabsContent>
+        <TabsContent value="flows">
+          <ProcessFlowsTab flowsWithSteps={flowsWithSteps} categoryOptions={processCategories} />
         </TabsContent>
       </Tabs>
     </div>

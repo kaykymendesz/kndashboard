@@ -50,8 +50,10 @@ export const activities = pgTable("activities", {
 export const scheduleItems = pgTable("schedule_items", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").references(() => projects.id),
+  flowId: integer("flow_id"),
   plannedDate: timestamp("planned_date"),
   title: varchar("title", { length: 300 }).notNull(),
+  description: text("description").default(""),
   category: varchar("category", { length: 100 }).default(""),
   priority: varchar("priority", { length: 20 }).default("Média"),
   status: varchar("status", { length: 50 }).default("Planejado"),
@@ -67,7 +69,11 @@ export const scheduleItems = pgTable("schedule_items", {
 export const expenses = pgTable("expenses", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").references(() => projects.id),
+  clientId: integer("client_id").references(() => clients.id),
   description: varchar("description", { length: 300 }).notNull(),
+  expenseType: varchar("expense_type", { length: 20 }).default("Único"),
+  planVariant: varchar("plan_variant", { length: 100 }).default(""),
+  planNotes: text("plan_notes").default(""),
   category: varchar("category", { length: 100 }).default(""),
   vendor: varchar("vendor", { length: 200 }).default(""),
   purchaseDate: timestamp("purchase_date"),
@@ -132,6 +138,45 @@ export const classifications = pgTable("classifications", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const processFlows = pgTable("process_flows", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description").default(""),
+  isDefault: boolean("is_default").default(false),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const processSteps = pgTable("process_steps", {
+  id: serial("id").primaryKey(),
+  flowId: integer("flow_id")
+    .notNull()
+    .references(() => processFlows.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 200 }).notNull(),
+  category: varchar("category", { length: 100 }).default(""),
+  description: text("description").default(""),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const scheduleProcesses = pgTable("schedule_processes", {
+  id: serial("id").primaryKey(),
+  scheduleItemId: integer("schedule_item_id")
+    .notNull()
+    .references(() => scheduleItems.id, { onDelete: "cascade" }),
+  stepId: integer("step_id").references(() => processSteps.id),
+  name: varchar("name", { length: 200 }).notNull(),
+  category: varchar("category", { length: 100 }).default(""),
+  status: varchar("status", { length: 50 }).default("Pendente"),
+  notes: text("notes").default(""),
+  sortOrder: integer("sort_order").default(0),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type Project = typeof projects.$inferSelect;
 export type ProjectInfo = typeof projectInfo.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
@@ -140,5 +185,13 @@ export type Expense = typeof expenses.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type MenuItem = typeof menuItems.$inferSelect;
 export type Classification = typeof classifications.$inferSelect;
+export type ProcessFlow = typeof processFlows.$inferSelect;
+export type ProcessStep = typeof processSteps.$inferSelect;
+export type ScheduleProcess = typeof scheduleProcesses.$inferSelect;
+
+export const EXPENSE_TYPES = ["Anual", "Mensal", "Único"] as const;
+export type ExpenseType = (typeof EXPENSE_TYPES)[number];
+
+export const PROCESS_STATUSES = ["Pendente", "Em andamento", "Concluído", "Cancelado"] as const;
 
 export const WIKINAYA_SLUG = "wikinaya";

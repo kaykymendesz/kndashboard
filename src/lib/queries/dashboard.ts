@@ -1,13 +1,18 @@
 import { db } from "@/lib/db";
-import { activities, expenses, scheduleItems, clients } from "@/lib/db/schema";
+import { activities, expenses, scheduleItems, clients, projects } from "@/lib/db/schema";
+
+function sumValues(items: { totalValue?: string | null }[]) {
+  return items.reduce((sum, e) => sum + Number(e.totalValue ?? 0), 0);
+}
 
 export async function getDashboardStats() {
   const allExpenses = await db.select().from(expenses);
   const allActivities = await db.select().from(activities);
   const allSchedule = await db.select().from(scheduleItems);
   const allClients = await db.select().from(clients);
+  const allProjects = await db.select().from(projects);
 
-  const totalInvested = allExpenses.reduce((sum, e) => sum + Number(e.totalValue ?? 0), 0);
+  const totalInvested = sumValues(allExpenses);
   const totalPaid = allExpenses
     .filter((e) => e.status?.toLowerCase().includes("pago"))
     .reduce((sum, e) => sum + Number(e.totalValue ?? 0), 0);
@@ -16,8 +21,37 @@ export async function getDashboardStats() {
   const elaineInvested = allExpenses.reduce((sum, e) => sum + Number(e.elaineShare ?? 0), 0);
   const kaykyInvested = allExpenses.reduce((sum, e) => sum + Number(e.kaykyShare ?? 0), 0);
 
+  const knExpenses = allExpenses.filter((e) => !e.projectId || e.projectId === null);
+  const knTotal = sumValues(knExpenses);
+
+  const expensesByPartner = {
+    Elaine: elaineInvested,
+    Kayky: kaykyInvested,
+  };
+
+  const projectMap = new Map(allProjects.map((p) => [p.id, p.name]));
+  const expensesByProject = allExpenses.reduce<Record<string, number>>((acc, e) => {
+    const key = e.projectId ? projectMap.get(e.projectId) ?? "Outros" : "K&N Empresa";
+    acc[key] = (acc[key] ?? 0) + Number(e.totalValue ?? 0);
+    return acc;
+  }, {});
+
+  const clientMap = new Map(allClients.map((c) => [c.id, c.name]));
+  const expensesByClient = allExpenses.reduce<Record<string, number>>((acc, e) => {
+    if (!e.clientId) return acc;
+    const key = clientMap.get(e.clientId) ?? "Cliente";
+    acc[key] = (acc[key] ?? 0) + Number(e.totalValue ?? 0);
+    return acc;
+  }, {});
+
+  const expensesByType = allExpenses.reduce<Record<string, number>>((acc, e) => {
+    const key = e.expenseType ?? "Único";
+    acc[key] = (acc[key] ?? 0) + Number(e.totalValue ?? 0);
+    return acc;
+  }, {});
+
   const criticalActivities = allActivities.filter(
-    (a) => a.priority === "Crítica" || a.priority === "Alta" && a.status === "Erro"
+    (a) => a.priority === "Crítica" || (a.priority === "Alta" && a.status === "Erro")
   ).length;
   const highPriority = allActivities.filter((a) => a.priority === "Alta").length;
   const pendingActivities = allActivities.filter(
@@ -58,6 +92,11 @@ export async function getDashboardStats() {
     kaykyPending,
     elaineInvested,
     kaykyInvested,
+    knTotal,
+    expensesByPartner,
+    expensesByProject,
+    expensesByClient,
+    expensesByType,
     activityCount: allActivities.length,
     criticalActivities,
     highPriority,
@@ -91,6 +130,11 @@ export async function getFinancialSummary() {
     monthlyData,
     totals: {
       invested: allExpenses.reduce((s, e) => s + Number(e.totalValue ?? 0), 0),
+      byType: allExpenses.reduce<Record<string, number>>((acc, e) => {
+        const key = e.expenseType ?? "Único";
+        acc[key] = (acc[key] ?? 0) + Number(e.totalValue ?? 0);
+        return acc;
+      }, {}),
       elaineShare: allExpenses.reduce((s, e) => s + Number(e.elaineShare ?? 0), 0),
       kaykyShare: allExpenses.reduce((s, e) => s + Number(e.kaykyShare ?? 0), 0),
       elainePending: allExpenses.reduce((s, e) => s + Number(e.elainePending ?? 0), 0),
