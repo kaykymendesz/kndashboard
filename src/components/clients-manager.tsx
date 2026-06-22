@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ import {
 } from "@/lib/actions/clients";
 import { formatCurrency } from "@/lib/format";
 import type { Client } from "@/lib/db/schema";
+import { PageHeader } from "@/components/page-header";
 
 const emptyForm: ClientInput = {
   name: "",
@@ -143,29 +144,31 @@ export function ClientsManager({ items }: { items: Client[] }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Clientes</h1>
-          <p className="text-muted-foreground text-sm">Cadastro de clientes e contratos</p>
-        </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Clientes"
+        description="Cadastro de clientes, contratos e relacionamento comercial."
+        icon={Users}
+      >
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditItem(null); }}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Novo cliente</Button>
+            <Button className="kn-btn-primary gap-2"><Plus className="h-4 w-4" />Novo cliente</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editItem ? "Editar" : "Novo"} cliente</DialogTitle></DialogHeader>
             <ClientForm initial={editItem ?? undefined} onDone={() => setOpen(false)} />
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
       {items.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-          Nenhum cliente cadastrado. Clique em &quot;Novo cliente&quot; para começar.
+        <div className="rounded-xl border border-dashed border-border/80 p-16 text-center bg-muted/20">
+          <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+          <p className="text-muted-foreground text-sm">Nenhum cliente cadastrado.</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Clique em &quot;Novo cliente&quot; para começar.</p>
         </div>
       ) : (
-        <div className="rounded-lg border bg-card overflow-x-auto">
+        <div className="kn-table-wrap overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

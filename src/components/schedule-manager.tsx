@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ import {
 } from "@/lib/actions/schedule";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 import type { ScheduleItem } from "@/lib/db/schema";
+import { PageHeader } from "@/components/page-header";
 
 const emptyForm: ScheduleInput = {
   title: "",
@@ -154,24 +155,24 @@ export function ScheduleManager({ items }: { items: ScheduleItem[] }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Cronograma</h1>
-          <p className="text-muted-foreground text-sm">Marcos, prazos e valores previstos</p>
-        </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Cronograma"
+        description="Marcos estratégicos, prazos e valores previstos vs. realizados."
+        icon={Calendar}
+      >
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditItem(null); }}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Novo item</Button>
+            <Button className="kn-btn-primary gap-2"><Plus className="h-4 w-4" />Novo item</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editItem ? "Editar" : "Novo"} item</DialogTitle></DialogHeader>
             <ScheduleForm initial={editItem ?? undefined} onDone={() => setOpen(false)} />
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
-      <div className="rounded-lg border bg-card overflow-x-auto">
+      <div className="kn-table-wrap overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoneyStat } from "@/components/stat-card";
+import { PageHeader } from "@/components/page-header";
 import { getFinancialSummary } from "@/lib/queries/dashboard";
 import { formatCurrency } from "@/lib/format";
-import { Wallet, Users } from "lucide-react";
+import { Wallet, Users, PieChart } from "lucide-react";
 import { FinancialCharts } from "@/components/financial-charts";
 import {
   Table,
@@ -26,68 +27,76 @@ export default async function FinanceiroPage() {
   const categoryData = Object.entries(byCategory).map(([name, value]) => ({ name, value }));
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Resumo Financeiro</h1>
-        <p className="text-muted-foreground text-sm">
-          Cronograma registra o previsto; Gastos registra o realizado.
-        </p>
-      </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Resumo Financeiro"
+        description="Cronograma registra o previsto; Gastos registra o realizado. Visão consolidada para tomada de decisão."
+        icon={PieChart}
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MoneyStat title="Total investido" amount={totals.invested} icon={Wallet} />
-        <MoneyStat title="Cota Elaine" amount={totals.elaineShare} icon={Users} />
-        <MoneyStat title="Cota Kayky" amount={totals.kaykyShare} icon={Users} />
-        <MoneyStat title="Total pendente" amount={totals.elainePending + totals.kaykyPending} icon={Wallet} accent="warning" />
-      </div>
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+          Totais
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MoneyStat title="Total investido" amount={totals.invested} icon={Wallet} />
+          <MoneyStat title="Cota Elaine" amount={totals.elaineShare} icon={Users} />
+          <MoneyStat title="Cota Kayky" amount={totals.kaykyShare} icon={Users} />
+          <MoneyStat title="Total pendente" amount={totals.elainePending + totals.kaykyPending} icon={Wallet} accent="warning" />
+        </div>
+      </section>
 
       <FinancialCharts monthlyData={monthlyData} categoryData={categoryData} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Saldos pendentes por sócio</CardTitle>
+      <Card className="kn-card">
+        <CardHeader className="kn-card-header py-4">
+          <CardTitle className="text-sm font-semibold">Saldos pendentes por sócio</CardTitle>
         </CardHeader>
-        <CardContent className="grid sm:grid-cols-2 gap-4">
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Elaine</p>
-            <p className="text-xl font-bold text-amber-600">{formatCurrency(totals.elainePending)}</p>
-          </div>
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Kayky</p>
-            <p className="text-xl font-bold text-amber-600">{formatCurrency(totals.kaykyPending)}</p>
+        <CardContent className="p-6">
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div className="kn-partner-card">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Elaine</p>
+              <p className="text-xl font-bold text-amber-600 mt-2 tabular-nums">{formatCurrency(totals.elainePending)}</p>
+            </div>
+            <div className="kn-partner-card">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Kayky</p>
+              <p className="text-xl font-bold text-amber-600 mt-2 tabular-nums">{formatCurrency(totals.kaykyPending)}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Detalhamento de gastos</CardTitle>
+      <Card className="kn-card">
+        <CardHeader className="kn-card-header py-4">
+          <CardTitle className="text-sm font-semibold">Detalhamento de gastos</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Elaine</TableHead>
-                <TableHead>Kayky</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell>{e.description}</TableCell>
-                  <TableCell>{e.category}</TableCell>
-                  <TableCell>{formatCurrency(e.totalValue)}</TableCell>
-                  <TableCell>{formatCurrency(e.elaineShare)}</TableCell>
-                  <TableCell>{formatCurrency(e.kaykyShare)}</TableCell>
-                  <TableCell><Badge variant="secondary">{e.status}</Badge></TableCell>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableHead className="font-semibold">Descrição</TableHead>
+                  <TableHead className="font-semibold">Categoria</TableHead>
+                  <TableHead className="font-semibold">Total</TableHead>
+                  <TableHead className="font-semibold">Elaine</TableHead>
+                  <TableHead className="font-semibold">Kayky</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {expenses.map((e) => (
+                  <TableRow key={e.id} className="kn-row-hover">
+                    <TableCell className="font-medium">{e.description}</TableCell>
+                    <TableCell className="text-muted-foreground">{e.category}</TableCell>
+                    <TableCell className="tabular-nums font-medium">{formatCurrency(e.totalValue)}</TableCell>
+                    <TableCell className="tabular-nums">{formatCurrency(e.elaineShare)}</TableCell>
+                    <TableCell className="tabular-nums">{formatCurrency(e.kaykyShare)}</TableCell>
+                    <TableCell><Badge variant="secondary">{e.status}</Badge></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

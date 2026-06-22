@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ import {
 } from "@/lib/actions/expenses";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 import type { Expense } from "@/lib/db/schema";
+import { PageHeader } from "@/components/page-header";
 
 const emptyForm: ExpenseInput = {
   description: "",
@@ -189,15 +190,17 @@ export function ExpensesManager({ items }: { items: Expense[] }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Gastos</h1>
-          <p className="text-muted-foreground text-sm">Controle de custos e rateio Elaine / Kayky</p>
-        </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Gastos"
+        description="Controle de custos, fornecedores e rateio entre Elaine e Kayky."
+        icon={Wallet}
+      >
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditItem(null); }}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditItem(null)}><Plus className="h-4 w-4 mr-2" />Novo gasto</Button>
+            <Button className="kn-btn-primary gap-2" onClick={() => setEditItem(null)}>
+              <Plus className="h-4 w-4" />Novo gasto
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
@@ -206,9 +209,9 @@ export function ExpensesManager({ items }: { items: Expense[] }) {
             <ExpenseForm initial={editItem ?? undefined} onDone={() => setOpen(false)} />
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
-      <div className="rounded-lg border bg-card">
+      <div className="kn-table-wrap">
         <Table>
           <TableHeader>
             <TableRow>

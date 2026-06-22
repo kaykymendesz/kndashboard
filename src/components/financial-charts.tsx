@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 
-const COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#818cf8", "#4f46e5"];
+const COLORS = ["#1e3a5f", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8"];
 
 type Props = {
   monthlyData: { month: string; total: number }[];
@@ -25,9 +25,9 @@ type Props = {
 export function FinancialCharts({ monthlyData, categoryData }: Props) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Gastos por mês</CardTitle>
+      <Card className="kn-card">
+        <CardHeader className="kn-card-header py-4">
+          <CardTitle className="text-sm font-semibold">Gastos por mês</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           {monthlyData.length === 0 ? (
@@ -39,16 +39,16 @@ export function FinancialCharts({ monthlyData, categoryData }: Props) {
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(v) => formatCurrency(Number(v))} />
-                <Bar dataKey="total" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" fill="#1e3a5f" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Gastos por categoria</CardTitle>
+      <Card className="kn-card">
+        <CardHeader className="kn-card-header py-4">
+          <CardTitle className="text-sm font-semibold">Gastos por categoria</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           {categoryData.length === 0 ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import {
   type ProjectInfoInput,
 } from "@/lib/actions/project";
 import type { ProjectInfo } from "@/lib/db/schema";
+import { PageHeader } from "@/components/page-header";
 
 function ProjectForm({ initial, onDone }: { initial?: ProjectInfo; onDone: () => void }) {
   const [pending, startTransition] = useTransition();
@@ -83,26 +84,26 @@ export function ProjectInfoManager({ items }: { items: ProjectInfo[] }) {
   }, {});
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Dados da Empresa</h1>
-          <p className="text-muted-foreground text-sm">Informações jurídicas, marca, infraestrutura e mais</p>
-        </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Dados da Empresa"
+        description="Informações jurídicas, marca, infraestrutura e estrutura organizacional."
+        icon={Building2}
+      >
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditItem(null); }}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Novo registro</Button>
+            <Button className="kn-btn-primary gap-2"><Plus className="h-4 w-4" />Novo registro</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editItem ? "Editar" : "Novo"} registro</DialogTitle></DialogHeader>
             <ProjectForm initial={editItem ?? undefined} onDone={() => setOpen(false)} />
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
       {Object.entries(grouped).map(([section, rows]) => (
-        <div key={section} className="rounded-lg border bg-card">
-          <div className="border-b px-4 py-3 font-semibold bg-muted/30">{section}</div>
+        <div key={section} className="kn-card overflow-hidden">
+          <div className="kn-card-header font-semibold text-sm">{section}</div>
           <div className="divide-y">
             {rows.map((row) => (
               <div key={row.id} className="flex items-start justify-between gap-4 px-4 py-3">

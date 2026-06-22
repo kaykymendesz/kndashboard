@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   const session = await auth();
 
   return (
-    <DashboardShell>
+    <DashboardShell userName={session?.user?.name}>
       {session?.user?.name && (
         <div className="sr-only">Logado como {session.user.name}</div>
       )}

@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -26,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    <html lang="pt-BR" className={`${inter.variable} ${plusJakarta.variable} h-full`}>
+      <body className="min-h-full flex flex-col font-sans">
         <Providers>
           <TooltipProvider>
             {children}

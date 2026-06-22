@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, ListTodo } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,7 @@ import {
   type ActivityInput,
 } from "@/lib/actions/activities";
 import type { Activity } from "@/lib/db/schema";
+import { PageHeader } from "@/components/page-header";
 
 const emptyForm: ActivityInput = {
   externalId: "",
@@ -158,17 +159,17 @@ export function ActivitiesManager({ items }: { items: Activity[] }) {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Atividades</h1>
-          <p className="text-muted-foreground text-sm">{items.length} itens cadastrados</p>
-        </div>
+    <div className="kn-page">
+      <PageHeader
+        title="Atividades"
+        description={`${items.length} itens cadastrados — acompanhamento de funcionalidades e status do projeto.`}
+        icon={ListTodo}
+      >
         <div className="flex gap-2">
-          <Input placeholder="Buscar..." value={filter} onChange={(e) => setFilter(e.target.value)} className="w-48" />
+          <Input placeholder="Buscar..." value={filter} onChange={(e) => setFilter(e.target.value)} className="kn-input w-48" />
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditItem(null); }}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" />Nova</Button>
+              <Button className="kn-btn-primary gap-2"><Plus className="h-4 w-4" />Nova</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{editItem ? "Editar" : "Nova"} atividade</DialogTitle></DialogHeader>
@@ -176,9 +177,9 @@ export function ActivitiesManager({ items }: { items: Activity[] }) {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </PageHeader>
 
-      <div className="rounded-lg border bg-card overflow-x-auto">
+      <div className="kn-table-wrap overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
