@@ -29,6 +29,8 @@ type ExpenseRow = {
   purchaseDate: Date | null;
   totalValue: string | null;
   status: string | null;
+  paymentType: string | null;
+  paymentCard: string | null;
   hasCost: boolean | null;
   projectName: string;
   clientName: string;
@@ -65,7 +67,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
     <div className="kn-page">
       <PageHeader
         title="Gastos"
-        description="Controle de custos anuais, mensais e únicos — rateio entre sócios, projetos e clientes."
+        description="Controle de custos anuais, mensais e únicos — rateio por centro de custo e sócios."
         icon={Wallet}
       >
         <Button asChild className="kn-btn-primary gap-2">
@@ -76,7 +78,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
       <ListSearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Buscar por descrição, projeto, cliente ou categoria..."
+        placeholder="Buscar por descrição, centro de custo, cliente ou categoria..."
       />
 
       <div className="kn-table-wrap overflow-x-auto mt-4">
@@ -87,7 +89,8 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
               <TableHead>Tipo</TableHead>
               <TableHead>Cronograma</TableHead>
               <TableHead>Plano</TableHead>
-              <TableHead>Projeto</TableHead>
+              <TableHead>Centro de custo</TableHead>
+              <TableHead>Pagamento</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Data</TableHead>
               <TableHead>Total</TableHead>
@@ -112,6 +115,10 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
                   )}
                 </TableCell>
                 <TableCell className="text-sm">{item.projectName}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {item.paymentType || "—"}
+                  {item.paymentCard ? ` · ${item.paymentCard}` : ""}
+                </TableCell>
                 <TableCell className="text-sm">{item.clientName}</TableCell>
                 <TableCell>
                   <Link href={`/gastos/${item.id}`} className="hover:text-primary hover:underline">

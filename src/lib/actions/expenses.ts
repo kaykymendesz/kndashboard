@@ -1,10 +1,18 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { expenses, scheduleItems, projects, clients } from "@/lib/db/schema";
+import { expenses, expensePlanChanges, scheduleItems } from "@/lib/db/schema";
 import { parseDate, parseNumber } from "@/lib/format";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+export type PlanChangeInput = {
+  id?: number;
+  planName: string;
+  planValue?: string;
+  changeDate?: string;
+  notes?: string;
+};
 
 export type ExpenseInput = {
   description: string;
@@ -12,8 +20,10 @@ export type ExpenseInput = {
   planVariant?: string;
   planNotes?: string;
   contractedPlan?: string;
+  contractedPlanValue?: string;
   planChangeVariant?: string;
   planChangeDate?: string;
+  planChanges?: PlanChangeInput[];
   category?: string;
   vendor?: string;
   purchaseDate?: string;
@@ -33,6 +43,8 @@ export type ExpenseInput = {
   status?: string;
   dueDate?: string;
   paymentMethod?: string;
+  paymentType?: string;
+  paymentCard?: string;
   paidBy?: string;
   elaineSettled?: boolean;
   kaykySettled?: boolean;
@@ -47,14 +59,22 @@ export type ExpenseInput = {
 function mapExpenseInput(input: ExpenseInput) {
   const hasCost = input.hasCost !== false;
   const totalValue = hasCost ? String(parseNumber(input.totalValue)) : "0";
+  const paymentType = input.paymentType ?? input.paymentMethod ?? "";
+
+  const validChanges = (input.planChanges ?? []).filter((c) => c.planName.trim());
+  const lastChange = validChanges[validChanges.length - 1];
 
   return {
     description: input.description,
     expenseType: input.expenseType ?? "Único",
     planVariant: input.contractedPlan ?? input.planVariant ?? "",
     contractedPlan: input.contractedPlan ?? input.planVariant ?? "",
-    planChangeVariant: input.planChangeVariant ?? "",
-    planChangeDate: parseDate(input.planChangeDate ?? ""),
+    contractedPlanValue:
+      input.contractedPlanValue && hasCost
+        ? String(parseNumber(input.contractedPlanValue))
+        : null,
+    planChangeVariant: lastChange?.planName ?? input.planChangeVariant ?? "",
+    planChangeDate: parseDate(lastChange?.changeDate ?? input.planChangeDate ?? ""),
     planNotes: input.planNotes ?? "",
     category: input.category ?? "",
     vendor: input.vendor ?? "",
@@ -70,7 +90,9 @@ function mapExpenseInput(input: ExpenseInput) {
     remainingInstallments: parseNumber(input.remainingInstallments),
     status: input.status ?? "Pendente",
     dueDate: parseDate(input.dueDate ?? ""),
-    paymentMethod: input.paymentMethod ?? "",
+    paymentMethod: paymentType,
+    paymentType,
+    paymentCard: input.paymentCard ?? "",
     paidBy: input.paidBy ?? "",
     elaineSettled: input.elaineSettled ?? false,
     kaykySettled: input.kaykySettled ?? false,
@@ -86,6 +108,23 @@ function mapExpenseInput(input: ExpenseInput) {
     hasCost,
     updatedAt: new Date(),
   };
+}
+
+async function savePlanChanges(expenseId: number, input: ExpenseInput) {
+  await db.delete(expensePlanChanges).where(eq(expensePlanChanges.expenseId, expenseId));
+
+  const changes = (input.planChanges ?? []).filter((c) => c.planName.trim());
+  for (let i = 0; i < changes.length; i++) {
+    const c = changes[i];
+    await db.insert(expensePlanChanges).values({
+      expenseId,
+      planName: c.planName.trim(),
+      planValue: c.planValue ? String(parseNumber(c.planValue)) : null,
+      changeDate: parseDate(c.changeDate ?? ""),
+      notes: c.notes ?? "",
+      sortOrder: i + 1,
+    });
+  }
 }
 
 async function syncScheduleFromExpense(input: ExpenseInput) {
@@ -125,6 +164,7 @@ function revalidateExpensePaths(id?: number) {
 
 export async function createExpense(input: ExpenseInput) {
   const [row] = await db.insert(expenses).values(mapExpenseInput(input)).returning();
+  await savePlanChanges(row.id, input);
   await syncScheduleFromExpense(input);
   revalidateExpensePaths(row.id);
   return row;
@@ -132,6 +172,7 @@ export async function createExpense(input: ExpenseInput) {
 
 export async function updateExpense(id: number, input: ExpenseInput) {
   await db.update(expenses).set(mapExpenseInput(input)).where(eq(expenses.id, id));
+  await savePlanChanges(id, input);
   await syncScheduleFromExpense(input);
   revalidateExpensePaths(id);
 }
@@ -147,6 +188,13 @@ export async function getExpenses() {
 
 export async function getExpenseById(id: number) {
   return db.query.expenses.findFirst({ where: eq(expenses.id, id) });
+}
+
+export async function getPlanChangesByExpenseId(expenseId: number) {
+  return db.query.expensePlanChanges.findMany({
+    where: eq(expensePlanChanges.expenseId, expenseId),
+    orderBy: [asc(expensePlanChanges.sortOrder), asc(expensePlanChanges.id)],
+  });
 }
 
 export async function getExpensesWithRelations() {

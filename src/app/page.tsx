@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { KnLogo } from "@/components/kn-logo";
 import { Building2, Headphones, LayoutDashboard, ArrowRight } from "lucide-react";
-import { COMPANY_LEGAL_NAME, COMPANY_SHORT_NAME } from "@/lib/constants";
+import { COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export default function PortalPage() {
   return (
@@ -8,15 +9,13 @@ export default function PortalPage() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
 
       <header className="relative z-10 px-6 py-8 md:px-12 max-md:pt-[max(2rem,env(safe-area-inset-top))]">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-sm">
-            <span className="text-lg font-bold">K&N</span>
-          </div>
-          <div>
-            <p className="text-lg font-semibold">{COMPANY_SHORT_NAME}</p>
-            <p className="text-sm text-white/60">{COMPANY_LEGAL_NAME}</p>
-          </div>
-        </div>
+        <KnLogo
+          size={48}
+          showText
+          subtitle={COMPANY_LEGAL_NAME}
+          titleClassName="text-lg font-semibold text-white"
+          subtitleClassName="text-sm text-white/60"
+        />
       </header>
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-12 max-md:pb-[max(2rem,env(safe-area-inset-bottom))]">

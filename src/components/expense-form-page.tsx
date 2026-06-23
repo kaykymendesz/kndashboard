@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Wallet, Link2 } from "lucide-react";
+import { ArrowLeft, Wallet, Link2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,17 @@ import {
   updateExpense,
   deleteExpense,
   type ExpenseInput,
+  type PlanChangeInput,
 } from "@/lib/actions/expenses";
-import { EXPENSE_TYPES, type Client, type Expense, type Project, type ScheduleItem } from "@/lib/db/schema";
+import {
+  EXPENSE_TYPES,
+  PAYMENT_TYPES,
+  type Client,
+  type Expense,
+  type ExpensePlanChange,
+  type Project,
+  type ScheduleItem,
+} from "@/lib/db/schema";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 
 type Props = {
@@ -33,6 +42,7 @@ type Props = {
   projects: Project[];
   clients: Client[];
   scheduleItems: ScheduleItem[];
+  planChanges?: ExpensePlanChange[];
   relatedExpenses?: Expense[];
   initialScheduleId?: number | null;
 };
@@ -41,8 +51,7 @@ const emptyForm: ExpenseInput = {
   description: "",
   expenseType: "Único",
   contractedPlan: "",
-  planChangeVariant: "",
-  planChangeDate: "",
+  contractedPlanValue: "",
   planNotes: "",
   category: "",
   vendor: "",
@@ -52,22 +61,36 @@ const emptyForm: ExpenseInput = {
   elaineShare: "0",
   kaykyShare: "0",
   status: "Pendente",
-  paymentMethod: "",
+  paymentType: "",
+  paymentCard: "",
   paidBy: "",
   elainePending: "0",
   kaykyPending: "0",
   hasCost: true,
   scheduleItemId: null,
+  projectId: null,
+  clientId: null,
+  planChanges: [],
 };
 
-function toForm(expense: Expense): ExpenseInput {
+function toPlanChanges(rows: ExpensePlanChange[]): PlanChangeInput[] {
+  return rows.map((r) => ({
+    id: r.id,
+    planName: r.planName,
+    planValue: r.planValue ? String(r.planValue) : "",
+    changeDate: toInputDate(r.changeDate),
+    notes: r.notes ?? "",
+  }));
+}
+
+function toForm(expense: Expense, planChanges: ExpensePlanChange[]): ExpenseInput {
   return {
     description: expense.description,
     expenseType: expense.expenseType ?? "Único",
     contractedPlan: expense.contractedPlan ?? expense.planVariant ?? "",
-    planChangeVariant: expense.planChangeVariant ?? "",
-    planChangeDate: toInputDate(expense.planChangeDate),
+    contractedPlanValue: expense.contractedPlanValue ? String(expense.contractedPlanValue) : "",
     planNotes: expense.planNotes ?? "",
+    planChanges: toPlanChanges(planChanges),
     category: expense.category ?? "",
     vendor: expense.vendor ?? "",
     purchaseDate: toInputDate(expense.purchaseDate),
@@ -81,7 +104,8 @@ function toForm(expense: Expense): ExpenseInput {
     hasCost: expense.hasCost !== false,
     status: expense.status ?? "Pendente",
     dueDate: toInputDate(expense.dueDate),
-    paymentMethod: expense.paymentMethod ?? "",
+    paymentType: expense.paymentType ?? expense.paymentMethod ?? "",
+    paymentCard: expense.paymentCard ?? "",
     paidBy: expense.paidBy ?? "",
     elainePending: String(expense.elainePending ?? 0),
     kaykyPending: String(expense.kaykyPending ?? 0),
@@ -90,12 +114,22 @@ function toForm(expense: Expense): ExpenseInput {
   };
 }
 
-export function ExpenseFormPage({ expense, projects, clients, scheduleItems, relatedExpenses = [], initialScheduleId }: Props) {
+const emptyDraft: PlanChangeInput = { planName: "", planValue: "", changeDate: "", notes: "" };
+
+export function ExpenseFormPage({
+  expense,
+  projects,
+  clients,
+  scheduleItems,
+  planChanges = [],
+  relatedExpenses = [],
+  initialScheduleId,
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState<ExpenseInput>(() => {
-    if (expense) return toForm(expense);
-    const base = { ...emptyForm };
+    if (expense) return toForm(expense, planChanges);
+    const base = { ...emptyForm, planChanges: [] as PlanChangeInput[] };
     if (initialScheduleId) {
       const item = scheduleItems.find((s) => s.id === initialScheduleId);
       if (item) {
@@ -108,7 +142,11 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
     }
     return base;
   });
+  const [draftChange, setDraftChange] = useState<PlanChangeInput>(emptyDraft);
+
   const hasCost = form.hasCost !== false;
+  const showCardField = form.paymentType === "Crédito" || form.paymentType === "Débito";
+  const planChangesList = form.planChanges ?? [];
 
   const set = (key: keyof ExpenseInput, value: string | number | null | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -129,13 +167,33 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
     }));
   };
 
+  const addPlanChange = () => {
+    if (!draftChange.planName.trim()) {
+      toast.error("Informe o nome do novo plano.");
+      return;
+    }
+    setForm((f) => ({
+      ...f,
+      planChanges: [...(f.planChanges ?? []), { ...draftChange, planName: draftChange.planName.trim() }],
+    }));
+    setDraftChange(emptyDraft);
+    toast.success("Alteração incluída — salve o gasto para gravar.");
+  };
+
+  const removePlanChange = (index: number) => {
+    setForm((f) => ({
+      ...f,
+      planChanges: (f.planChanges ?? []).filter((_, i) => i !== index),
+    }));
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
       try {
         if (expense) {
           await updateExpense(expense.id, form);
-          toast.success("Gasto atualizado — cronograma sincronizado quando vinculado");
+          toast.success("Gasto atualizado");
         } else {
           const row = await createExpense(form);
           toast.success("Gasto criado");
@@ -170,7 +228,7 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
 
       <PageHeader
         title={expense ? "Editar gasto" : "Novo gasto"}
-        description="Gastos conversam com o cronograma: vincule itens com custo e o valor realizado é atualizado automaticamente."
+        description="Rateio por centro de custo (K&N ou projeto), pagamento, planos e vínculo com cronograma."
         icon={Wallet}
       />
 
@@ -204,10 +262,7 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
               </div>
               <div className="grid gap-2">
                 <Label>Este gasto tem custo financeiro?</Label>
-                <Select
-                  value={hasCost ? "sim" : "nao"}
-                  onValueChange={(v) => set("hasCost", v === "sim")}
-                >
+                <Select value={hasCost ? "sim" : "nao"} onValueChange={(v) => set("hasCost", v === "sim")}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="sim">Sim — entra no financeiro</SelectItem>
@@ -221,17 +276,9 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
                 <p className="font-medium text-primary">{linkedSchedule.title}</p>
                 <p className="text-muted-foreground text-xs mt-1">
                   Previsto: {linkedSchedule.plannedValue ? formatCurrency(linkedSchedule.plannedValue) : "—"} ·{" "}
-                  Realizado no cronograma: {linkedSchedule.actualValue ? formatCurrency(linkedSchedule.actualValue) : "—"}
+                  Realizado: {linkedSchedule.actualValue ? formatCurrency(linkedSchedule.actualValue) : "—"}
                 </p>
-                <Link href={`/cronograma/${linkedSchedule.id}`} className="text-xs text-primary hover:underline mt-1 inline-block">
-                  Abrir no cronograma
-                </Link>
               </div>
-            )}
-            {!hasCost && (
-              <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
-                Gastos sem custo não entram nos totais do financeiro — útil para marcos do cronograma sem valor.
-              </p>
             )}
           </CardContent>
         </Card>
@@ -243,7 +290,7 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
           <CardContent className="p-6 grid gap-4">
             <div className="grid gap-2">
               <Label>Nome / Descrição *</Label>
-              <Input required value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Ex: Cursor IA" />
+              <Input required value={form.description} onChange={(e) => set("description", e.target.value)} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -272,46 +319,109 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Alteração de plano</Label>
+                <Label>Valor do plano contratado (R$)</Label>
                 <Input
-                  value={form.planChangeVariant}
-                  onChange={(e) => set("planChangeVariant", e.target.value)}
-                  placeholder="Ex: migrou para Pro+"
+                  type="number"
+                  step="0.01"
+                  disabled={!hasCost}
+                  value={form.contractedPlanValue}
+                  onChange={(e) => set("contractedPlanValue", e.target.value)}
+                  placeholder="Ex: 104.23"
                 />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Data da alteração de plano</Label>
-              <Input type="date" value={form.planChangeDate} onChange={(e) => set("planChangeDate", e.target.value)} />
+
+            <div className="rounded-xl border border-border/70 p-4 space-y-4 bg-muted/20">
+              <div>
+                <p className="text-sm font-semibold">Alterações de plano</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Inclua cada mudança de plano com valor e data — útil quando o serviço muda várias vezes (ex: Pro → Pro+).
+                </p>
+              </div>
+
+              {planChangesList.length > 0 && (
+                <ul className="space-y-2">
+                  {planChangesList.map((c, i) => (
+                    <li key={i} className="flex items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2 text-sm">
+                      <div>
+                        <p className="font-medium">{c.planName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.planValue ? formatCurrency(c.planValue) : "—"}
+                          {c.changeDate ? ` · ${formatDate(c.changeDate)}` : ""}
+                        </p>
+                      </div>
+                      <Button type="button" size="icon" variant="ghost" onClick={() => removePlanChange(i)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid gap-2 sm:col-span-1">
+                  <Label>Novo plano</Label>
+                  <Input
+                    value={draftChange.planName}
+                    onChange={(e) => setDraftChange({ ...draftChange, planName: e.target.value })}
+                    placeholder="Ex: Pro+"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Valor (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={draftChange.planValue}
+                    onChange={(e) => setDraftChange({ ...draftChange, planValue: e.target.value })}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Data do novo plano</Label>
+                  <Input
+                    type="date"
+                    value={draftChange.changeDate}
+                    onChange={(e) => setDraftChange({ ...draftChange, changeDate: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button type="button" variant="outline" className="gap-2" onClick={addPlanChange}>
+                <Plus className="h-4 w-4" /> Incluir alteração
+              </Button>
             </div>
+
             <div className="grid gap-2">
               <Label>Anotações do plano</Label>
-              <Textarea
-                value={form.planNotes}
-                onChange={(e) => set("planNotes", e.target.value)}
-                placeholder="Ex: 1º mês plano Pro R$ X; mês seguinte migrou para Pro+ R$ Y"
-                rows={3}
-              />
+              <Textarea value={form.planNotes} onChange={(e) => set("planNotes", e.target.value)} rows={2} />
             </div>
           </CardContent>
         </Card>
 
         <Card className={`kn-card ${!hasCost ? "opacity-60" : ""}`}>
           <CardHeader className="kn-card-header py-4">
-            <CardTitle className="text-sm font-semibold">Valores e vínculos</CardTitle>
+            <CardTitle className="text-sm font-semibold">Valores, rateio e pagamento</CardTitle>
           </CardHeader>
           <CardContent className="p-6 grid gap-4">
+            <p className="text-xs text-muted-foreground rounded-lg bg-muted/40 px-3 py-2">
+              <strong>Centro de custo:</strong> escolha K&N Empresa para gastos operacionais (calculados separados) ou um
+              projeto específico (Wikinaya, etc.). <strong>Cliente</strong> só quando o gasto for do cliente — gastos
+              internos K&N ficam sem cliente.
+            </p>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Projeto</Label>
+                <Label>Centro de custo (rateio)</Label>
                 <Select
-                  value={form.projectId ? String(form.projectId) : "none"}
-                  onValueChange={(v) => set("projectId", v === "none" ? null : Number(v))}
+                  value={form.projectId ? String(form.projectId) : "kn"}
+                  onValueChange={(v) => {
+                    set("projectId", v === "kn" ? null : Number(v));
+                    if (v === "kn") set("clientId", null);
+                  }}
                   disabled={!hasCost}
                 >
-                  <SelectTrigger><SelectValue placeholder="K&N Empresa" /></SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">K&N Empresa</SelectItem>
+                    <SelectItem value="kn">K&N Empresa — gasto geral</SelectItem>
                     {projects.map((p) => (
                       <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
                     ))}
@@ -319,25 +429,29 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>Cliente</Label>
+                <Label>Cliente (opcional)</Label>
                 <Select
                   value={form.clientId ? String(form.clientId) : "none"}
                   onValueChange={(v) => set("clientId", v === "none" ? null : Number(v))}
-                  disabled={!hasCost}
+                  disabled={!hasCost || !form.projectId}
                 >
-                  <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Sem cliente" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
+                    <SelectItem value="none">Sem cliente — gasto K&N</SelectItem>
                     {clients.map((c) => (
                       <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {!form.projectId && (
+                  <p className="text-[11px] text-muted-foreground">Gasto da empresa — cliente não se aplica.</p>
+                )}
               </div>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="grid gap-2">
-                <Label>Valor total (R$) {hasCost ? "*" : ""}</Label>
+                <Label>Valor total pago (R$) {hasCost ? "*" : ""}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -356,6 +470,37 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
                 <Input type="number" step="0.01" disabled={!hasCost} value={form.kaykyShare} onChange={(e) => set("kaykyShare", e.target.value)} />
               </div>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Tipo de pagamento</Label>
+                <Select
+                  value={form.paymentType || "none"}
+                  onValueChange={(v) => set("paymentType", v === "none" ? "" : v)}
+                  disabled={!hasCost}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não informado</SelectItem>
+                    {PAYMENT_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {showCardField && (
+                <div className="grid gap-2">
+                  <Label>Cartão utilizado</Label>
+                  <Input
+                    disabled={!hasCost}
+                    value={form.paymentCard}
+                    onChange={(e) => set("paymentCard", e.target.value)}
+                    placeholder="Ex: Nubank Kayky, Visa Elaine"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Categoria</Label>
@@ -408,16 +553,12 @@ export function ExpenseFormPage({ expense, projects, clients, scheduleItems, rel
           </CardHeader>
           <CardContent className="p-0 divide-y divide-border/50">
             {relatedExpenses.map((r) => (
-              <Link
-                key={r.id}
-                href={`/gastos/${r.id}`}
-                className="flex items-center justify-between px-6 py-4 kn-row-hover"
-              >
+              <Link key={r.id} href={`/gastos/${r.id}`} className="flex items-center justify-between px-6 py-4 kn-row-hover">
                 <div>
                   <p className="font-medium text-sm">{formatDate(r.purchaseDate)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {r.contractedPlan || r.planVariant || r.expenseType}
-                    {r.planChangeVariant ? ` → ${r.planChangeVariant}` : ""}
+                    {r.contractedPlan || r.expenseType}
+                    {r.paymentType ? ` · ${r.paymentType}` : ""}
                   </p>
                 </div>
                 <div className="text-right">

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Building2, Lock, Mail, Shield } from "lucide-react";
 import Link from "next/link";
+import { KnLogo } from "@/components/kn-logo";
 import { COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export default function LoginPage() {
@@ -40,15 +41,13 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] relative flex-col justify-between bg-[oklch(0.22_0.06_250)] p-12 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur">
-              <span className="text-lg font-bold">K&N</span>
-            </div>
-            <div>
-              <p className="text-lg font-semibold">K&N Dashboard</p>
-              <p className="text-sm text-white/60">Gestão Empresarial</p>
-            </div>
-          </div>
+          <KnLogo
+            size={48}
+            showText
+            subtitle="Gestão Empresarial"
+            titleClassName="text-lg font-semibold text-white"
+            subtitleClassName="text-sm text-white/60"
+          />
         </div>
 
         <div className="relative space-y-6 max-w-md">
@@ -85,14 +84,8 @@ export default function LoginPage() {
             <ArrowLeft className="h-3.5 w-3.5" /> Voltar à escolha de área
           </Link>
 
-          <div className="lg:hidden flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white text-sm font-bold">
-              K&N
-            </div>
-            <div>
-              <p className="font-semibold">K&N Dashboard</p>
-              <p className="text-xs text-muted-foreground">Gestão Empresarial</p>
-            </div>
+          <div className="lg:hidden mb-2">
+            <KnLogo size={40} showText subtitle="Gestão Empresarial" />
           </div>
 
           <div className="space-y-2">

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ExpenseFormPage } from "@/components/expense-form-page";
-import { getExpenseById, getRelatedExpensesByName } from "@/lib/actions/expenses";
+import { getExpenseById, getRelatedExpensesByName, getPlanChangesByExpenseId } from "@/lib/actions/expenses";
 import { getScheduleItemsWithCost, getScheduleItemById } from "@/lib/actions/schedule";
 import { db } from "@/lib/db";
 
@@ -14,11 +14,12 @@ export default async function GastoDetailPage({ params }: Props) {
   const expense = await getExpenseById(expenseId);
   if (!expense) notFound();
 
-  const [projects, clients, scheduleItems, relatedExpenses] = await Promise.all([
+  const [projects, clients, scheduleItems, relatedExpenses, planChanges] = await Promise.all([
     db.query.projects.findMany(),
     db.query.clients.findMany(),
     getScheduleItemsWithCost(),
     getRelatedExpensesByName(expense.description, expense.id),
+    getPlanChangesByExpenseId(expenseId),
   ]);
 
   let scheduleList = scheduleItems;
@@ -33,6 +34,7 @@ export default async function GastoDetailPage({ params }: Props) {
       projects={projects}
       clients={clients}
       scheduleItems={scheduleList}
+      planChanges={planChanges}
       relatedExpenses={relatedExpenses}
     />
   );

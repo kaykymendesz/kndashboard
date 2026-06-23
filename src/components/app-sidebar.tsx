@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { KnLogo } from "@/components/kn-logo";
 import { cn } from "@/lib/utils";
 import { getIcon, COMPANY_LEGAL_NAME } from "@/lib/constants";
 
@@ -84,15 +85,13 @@ export function AppSidebar({
   return (
     <Sidebar className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border/50 px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-sm">
-            <span className="text-sm font-bold text-white tracking-tight">K&N</span>
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-white leading-tight truncate">K&N Dashboard</p>
-            <p className="text-[11px] text-sidebar-foreground/60 truncate">{subtitle}</p>
-          </div>
-        </div>
+        <KnLogo
+          size={44}
+          showText
+          subtitle={subtitle}
+          titleClassName="text-sm font-semibold text-white leading-tight truncate"
+          subtitleClassName="text-[11px] text-sidebar-foreground/60 truncate"
+        />
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4 space-y-4 min-h-0">

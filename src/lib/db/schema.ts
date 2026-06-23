@@ -102,10 +102,26 @@ export const expenses = pgTable("expenses", {
   scheduleItemId: integer("schedule_item_id").references(() => scheduleItems.id),
   hasCost: boolean("has_cost").default(true),
   contractedPlan: varchar("contracted_plan", { length: 100 }).default(""),
+  contractedPlanValue: numeric("contracted_plan_value", { precision: 12, scale: 2 }),
   planChangeVariant: varchar("plan_change_variant", { length: 100 }).default(""),
   planChangeDate: timestamp("plan_change_date"),
+  paymentType: varchar("payment_type", { length: 50 }).default(""),
+  paymentCard: varchar("payment_card", { length: 120 }).default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const expensePlanChanges = pgTable("expense_plan_changes", {
+  id: serial("id").primaryKey(),
+  expenseId: integer("expense_id")
+    .notNull()
+    .references(() => expenses.id, { onDelete: "cascade" }),
+  planName: varchar("plan_name", { length: 100 }).notNull().default(""),
+  planValue: numeric("plan_value", { precision: 12, scale: 2 }),
+  changeDate: timestamp("change_date"),
+  notes: text("notes").default(""),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const clients = pgTable("clients", {
@@ -237,6 +253,7 @@ export type ProjectInfo = typeof projectInfo.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type ScheduleItem = typeof scheduleItems.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
+export type ExpensePlanChange = typeof expensePlanChanges.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type MenuItem = typeof menuItems.$inferSelect;
 export type Classification = typeof classifications.$inferSelect;
@@ -261,6 +278,9 @@ export type AppUser = typeof appUsers.$inferSelect;
 
 export const EXPENSE_TYPES = ["Anual", "Mensal", "Único"] as const;
 export type ExpenseType = (typeof EXPENSE_TYPES)[number];
+
+export const PAYMENT_TYPES = ["Crédito", "Débito", "PIX", "Boleto", "Transferência", "Dinheiro"] as const;
+export type PaymentType = (typeof PAYMENT_TYPES)[number];
 
 export const PROCESS_STATUSES = ["Pendente", "Em andamento", "Concluído", "Cancelado"] as const;
 
