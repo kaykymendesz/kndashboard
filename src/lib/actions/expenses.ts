@@ -3,55 +3,11 @@
 import { db } from "@/lib/db";
 import { expenses, expensePlanChanges, scheduleItems } from "@/lib/db/schema";
 import { parseDate, parseNumber } from "@/lib/format";
-import { getEffectivePlanValue, splitPartnerShares, type PlanChangeInput } from "@/lib/expense-rateio";
+import { getEffectivePlanValue, splitPartnerShares } from "@/lib/expense-rateio";
+import type { ExpenseInput } from "@/lib/expense-input";
 import { statusFromSettlement } from "@/lib/expense-settlement";
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-
-export type { PlanChangeInput };
-
-export type ExpenseInput = {
-  description: string;
-  expenseType?: string;
-  planVariant?: string;
-  planNotes?: string;
-  contractedPlan?: string;
-  contractedPlanValue?: string;
-  planChangeVariant?: string;
-  planChangeDate?: string;
-  planChanges?: PlanChangeInput[];
-  category?: string;
-  vendor?: string;
-  vendorId?: number | null;
-  purchaseDate?: string;
-  financialResponsible?: string;
-  totalValue: string;
-  elaineShare?: string;
-  kaykyShare?: string;
-  projectId?: number | null;
-  clientId?: number | null;
-  scheduleItemId?: number | null;
-  hasCost?: boolean;
-  isInstallment?: boolean;
-  installmentCount?: string;
-  installmentValue?: string;
-  paidInstallments?: string;
-  remainingInstallments?: string;
-  status?: string;
-  dueDate?: string;
-  paymentMethod?: string;
-  paymentType?: string;
-  paymentCard?: string;
-  paidBy?: string;
-  elaineSettled?: boolean;
-  kaykySettled?: boolean;
-  elainePending?: string;
-  kaykyPending?: string;
-  linkedEmail?: string;
-  autoRenew?: boolean;
-  expirationDate?: string;
-  registeredBy?: string;
-};
 
 function mapExpenseInput(input: ExpenseInput) {
   const hasCost = input.hasCost !== false;

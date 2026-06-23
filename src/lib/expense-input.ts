@@ -1,0 +1,46 @@
+import type { PlanChangeInput } from "@/lib/expense-rateio";
+
+export type { PlanChangeInput };
+
+export type ExpenseInput = {
+  description: string;
+  expenseType?: string;
+  planVariant?: string;
+  planNotes?: string;
+  contractedPlan?: string;
+  contractedPlanValue?: string;
+  planChangeVariant?: string;
+  planChangeDate?: string;
+  planChanges?: PlanChangeInput[];
+  category?: string;
+  vendor?: string;
+  vendorId?: number | null;
+  purchaseDate?: string;
+  financialResponsible?: string;
+  totalValue: string;
+  elaineShare?: string;
+  kaykyShare?: string;
+  projectId?: number | null;
+  clientId?: number | null;
+  scheduleItemId?: number | null;
+  hasCost?: boolean;
+  isInstallment?: boolean;
+  installmentCount?: string;
+  installmentValue?: string;
+  paidInstallments?: string;
+  remainingInstallments?: string;
+  status?: string;
+  dueDate?: string;
+  paymentMethod?: string;
+  paymentType?: string;
+  paymentCard?: string;
+  paidBy?: string;
+  elaineSettled?: boolean;
+  kaykySettled?: boolean;
+  elainePending?: string;
+  kaykyPending?: string;
+  linkedEmail?: string;
+  autoRenew?: boolean;
+  expirationDate?: string;
+  registeredBy?: string;
+};

@@ -23,9 +23,8 @@ import {
   createExpense,
   updateExpense,
   deleteExpense,
-  type ExpenseInput,
-  type PlanChangeInput,
 } from "@/lib/actions/expenses";
+import type { ExpenseInput, PlanChangeInput } from "@/lib/expense-input";
 import { applyPlanChangeToForm, applyPlanValueToRateio, syncFormRateioFromPlan } from "@/lib/expense-rateio";
 import {
   applyVendorPayer,
