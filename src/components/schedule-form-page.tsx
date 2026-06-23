@@ -42,6 +42,7 @@ const emptyForm: ScheduleInput = {
   plannedDate: "",
   responsible: "",
   notes: "",
+  hasCost: false,
 };
 
 export function ScheduleFormPage({ item, statusOptions, flows }: Props) {
@@ -61,11 +62,12 @@ export function ScheduleFormPage({ item, statusOptions, flows }: Props) {
           responsible: item.responsible ?? "",
           notes: item.notes ?? "",
           flowId: item.flowId,
+          hasCost: item.hasCost === true,
         }
       : emptyForm
   );
 
-  const set = (key: keyof ScheduleInput, value: string | number | null) =>
+  const set = (key: keyof ScheduleInput, value: string | number | null | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
 
   const onSubmit = (e: React.FormEvent) => {
@@ -171,6 +173,26 @@ export function ScheduleFormPage({ item, statusOptions, flows }: Props) {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
+                <Label>Item com custo financeiro?</Label>
+                <Select
+                  value={form.hasCost ? "sim" : "nao"}
+                  onValueChange={(v) => set("hasCost", v === "sim")}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sim">Sim — aparece em Gastos e financeiro</SelectItem>
+                    <SelectItem value="nao">Não — marco sem valor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Responsável</Label>
+                <Input value={form.responsible} onChange={(e) => set("responsible", e.target.value)} />
+              </div>
+            </div>
+            {form.hasCost && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
                 <Label>Valor previsto (R$)</Label>
                 <Input type="number" step="0.01" value={form.plannedValue} onChange={(e) => set("plannedValue", e.target.value)} />
               </div>
@@ -179,10 +201,12 @@ export function ScheduleFormPage({ item, statusOptions, flows }: Props) {
                 <Input type="number" step="0.01" value={form.actualValue} onChange={(e) => set("actualValue", e.target.value)} />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Responsável</Label>
-              <Input value={form.responsible} onChange={(e) => set("responsible", e.target.value)} />
-            </div>
+            )}
+            {!form.hasCost && (
+              <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
+                Itens sem custo não aparecem ao vincular um gasto — apenas marcos de acompanhamento.
+              </p>
+            )}
             <div className="grid gap-2">
               <Label>Observações</Label>
               <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} />

@@ -70,16 +70,17 @@ export async function getWikinayaProject() {
 }
 
 export async function createProject(input: ProjectInput) {
-  await db.insert(projects).values({
+  const [row] = await db.insert(projects).values({
     name: input.name,
     slug: input.slug.toLowerCase().replace(/\s+/g, "-"),
     description: input.description ?? "",
     status: input.status ?? "Ativo",
     color: input.color ?? "#1e3a5f",
     notes: input.notes ?? "",
-  });
+  }).returning();
   revalidatePath("/projetos");
   revalidatePath("/configuracoes");
+  return row;
 }
 
 export async function updateProject(id: number, input: ProjectInput) {

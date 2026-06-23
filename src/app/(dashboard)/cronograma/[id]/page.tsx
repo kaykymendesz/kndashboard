@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ScheduleItemDetail } from "@/components/schedule-item-detail";
+import { getExpenseByScheduleItemId } from "@/lib/actions/expenses";
 import { getScheduleItemById } from "@/lib/actions/schedule";
 import { getScheduleProcesses, initProcessesFromFlow } from "@/lib/actions/schedule-processes";
 
@@ -18,5 +19,7 @@ export default async function CronogramaItemPage({ params }: Props) {
     processes = await initProcessesFromFlow(itemId, item.flowId);
   }
 
-  return <ScheduleItemDetail item={item} processes={processes} />;
+  const linkedExpense = await getExpenseByScheduleItemId(itemId);
+
+  return <ScheduleItemDetail item={item} processes={processes} linkedExpenseId={linkedExpense?.id} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Calendar, Pencil, Plus, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar, Pencil, Plus, ChevronRight, Wallet } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,10 @@ import type { ScheduleItem, ScheduleProcess } from "@/lib/db/schema";
 type Props = {
   item: ScheduleItem;
   processes: ScheduleProcess[];
+  linkedExpenseId?: number | null;
 };
 
-export function ScheduleItemDetail({ item, processes }: Props) {
+export function ScheduleItemDetail({ item, processes, linkedExpenseId }: Props) {
   const completed = processes.filter((p) => p.status === "Concluído").length;
 
   return (
@@ -28,14 +29,26 @@ export function ScheduleItemDetail({ item, processes }: Props) {
           <Button variant="outline" asChild className="gap-2">
             <Link href={`/cronograma/${item.id}/editar`}><Pencil className="h-4 w-4" />Editar item</Link>
           </Button>
+          {item.hasCost && (
+            linkedExpenseId ? (
+              <Button asChild className="kn-btn-primary gap-2">
+                <Link href={`/gastos/${linkedExpenseId}`}><Wallet className="h-4 w-4" />Ver gasto vinculado</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="gap-2">
+                <Link href={`/gastos/novo?scheduleId=${item.id}`}><Wallet className="h-4 w-4" />Registrar gasto</Link>
+              </Button>
+            )
+          )}
         </div>
       </PageHeader>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Data</p><p className="font-semibold">{formatDate(item.plannedDate)}</p></CardContent></Card>
+        <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Custo</p><Badge className="mt-1">{item.hasCost ? "Com custo" : "Sem custo"}</Badge></CardContent></Card>
         <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Status</p><Badge className="mt-1">{item.status}</Badge></CardContent></Card>
-        <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Previsto</p><p className="font-semibold tabular-nums">{item.plannedValue ? formatCurrency(item.plannedValue) : "—"}</p></CardContent></Card>
-        <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Processos</p><p className="font-semibold">{completed}/{processes.length} concluídos</p></CardContent></Card>
+        <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Previsto</p><p className="font-semibold tabular-nums">{item.hasCost && item.plannedValue ? formatCurrency(item.plannedValue) : "—"}</p></CardContent></Card>
+        <Card className="kn-card"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Realizado</p><p className="font-semibold tabular-nums">{item.hasCost && item.actualValue ? formatCurrency(item.actualValue) : "—"}</p></CardContent></Card>
       </div>
 
       {item.notes && (
@@ -47,7 +60,7 @@ export function ScheduleItemDetail({ item, processes }: Props) {
 
       <Card className="kn-card">
         <CardHeader className="kn-card-header flex flex-row items-center justify-between py-4">
-          <CardTitle className="text-sm font-semibold">Processos deste item</CardTitle>
+          <CardTitle className="text-sm font-semibold">Processos deste item ({completed}/{processes.length})</CardTitle>
           <Button size="sm" variant="outline" asChild>
             <Link href={`/cronograma/${item.id}/processos/novo`} className="gap-1"><Plus className="h-3.5 w-3.5" />Novo processo</Link>
           </Button>

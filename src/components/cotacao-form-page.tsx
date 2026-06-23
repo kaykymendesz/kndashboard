@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,13 +18,15 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { updateQuotation } from "@/lib/actions/quotations";
+import { updateQuotation, deleteQuotation } from "@/lib/actions/quotations";
 import { QUOTATION_STATUSES, type Client, type Quotation } from "@/lib/db/schema";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { formatCurrency, toInputDate } from "@/lib/format";
 
 export function CotacaoFormPage({ quotation, client }: { quotation: Quotation; client: Client }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [form, setForm] = useState({
     title: quotation.title,
     description: quotation.description ?? "",
@@ -55,6 +57,19 @@ export function CotacaoFormPage({ quotation, client }: { quotation: Quotation; c
         router.refresh();
       } catch {
         toast.error("Erro ao salvar");
+      }
+    });
+  };
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await deleteQuotation(quotation.id, client.slug ?? undefined);
+        toast.success("Cotação excluída");
+        router.push(`/atendimento/clientes/${client.slug}`);
+        router.refresh();
+      } catch {
+        toast.error("Erro ao excluir");
       }
     });
   };
@@ -102,12 +117,32 @@ export function CotacaoFormPage({ quotation, client }: { quotation: Quotation; c
                 </Select>
               </div>
             </div>
-            <Button type="submit" className="kn-btn-primary w-fit" disabled={pending}>
-              Salvar
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button type="submit" className="kn-btn-primary w-fit" disabled={pending}>
+                Salvar
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="gap-2"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 className="h-4 w-4" /> Excluir
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </form>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Excluir cotação?"
+        description={`A cotação "${quotation.title}" será removida permanentemente.`}
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleDelete}
+      />
 
       <Button variant="outline" asChild className="gap-2">
         <Link href={`/atendimento/clientes/${client.slug}/nova-demanda`}>

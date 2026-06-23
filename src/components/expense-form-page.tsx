@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Wallet } from "lucide-react";
+import { ArrowLeft, Wallet, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -25,20 +25,24 @@ import {
   deleteExpense,
   type ExpenseInput,
 } from "@/lib/actions/expenses";
-import { EXPENSE_TYPES, type Client, type Expense, type Project } from "@/lib/db/schema";
+import { EXPENSE_TYPES, type Client, type Expense, type Project, type ScheduleItem } from "@/lib/db/schema";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 
 type Props = {
   expense?: Expense;
   projects: Project[];
   clients: Client[];
+  scheduleItems: ScheduleItem[];
   relatedExpenses?: Expense[];
+  initialScheduleId?: number | null;
 };
 
 const emptyForm: ExpenseInput = {
   description: "",
   expenseType: "Único",
-  planVariant: "",
+  contractedPlan: "",
+  planChangeVariant: "",
+  planChangeDate: "",
   planNotes: "",
   category: "",
   vendor: "",
@@ -52,13 +56,17 @@ const emptyForm: ExpenseInput = {
   paidBy: "",
   elainePending: "0",
   kaykyPending: "0",
+  hasCost: true,
+  scheduleItemId: null,
 };
 
 function toForm(expense: Expense): ExpenseInput {
   return {
     description: expense.description,
     expenseType: expense.expenseType ?? "Único",
-    planVariant: expense.planVariant ?? "",
+    contractedPlan: expense.contractedPlan ?? expense.planVariant ?? "",
+    planChangeVariant: expense.planChangeVariant ?? "",
+    planChangeDate: toInputDate(expense.planChangeDate),
     planNotes: expense.planNotes ?? "",
     category: expense.category ?? "",
     vendor: expense.vendor ?? "",
@@ -69,6 +77,8 @@ function toForm(expense: Expense): ExpenseInput {
     kaykyShare: String(expense.kaykyShare ?? 0),
     projectId: expense.projectId,
     clientId: expense.clientId,
+    scheduleItemId: expense.scheduleItemId,
+    hasCost: expense.hasCost !== false,
     status: expense.status ?? "Pendente",
     dueDate: toInputDate(expense.dueDate),
     paymentMethod: expense.paymentMethod ?? "",
@@ -80,13 +90,44 @@ function toForm(expense: Expense): ExpenseInput {
   };
 }
 
-export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = [] }: Props) {
+export function ExpenseFormPage({ expense, projects, clients, scheduleItems, relatedExpenses = [], initialScheduleId }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [form, setForm] = useState<ExpenseInput>(expense ? toForm(expense) : emptyForm);
+  const [form, setForm] = useState<ExpenseInput>(() => {
+    if (expense) return toForm(expense);
+    const base = { ...emptyForm };
+    if (initialScheduleId) {
+      const item = scheduleItems.find((s) => s.id === initialScheduleId);
+      if (item) {
+        base.scheduleItemId = item.id;
+        base.description = item.title;
+        base.category = item.category ?? "";
+        base.hasCost = true;
+        if (item.plannedValue) base.totalValue = String(item.plannedValue);
+      }
+    }
+    return base;
+  });
+  const hasCost = form.hasCost !== false;
 
   const set = (key: keyof ExpenseInput, value: string | number | null | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  const applyScheduleItem = (scheduleId: string) => {
+    if (scheduleId === "none") {
+      set("scheduleItemId", null);
+      return;
+    }
+    const item = scheduleItems.find((s) => String(s.id) === scheduleId);
+    if (!item) return;
+    setForm((f) => ({
+      ...f,
+      scheduleItemId: item.id,
+      description: f.description || item.title,
+      category: f.category || item.category || "",
+      totalValue: f.totalValue === "0" && item.plannedValue ? String(item.plannedValue) : f.totalValue,
+    }));
+  };
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +135,7 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
       try {
         if (expense) {
           await updateExpense(expense.id, form);
-          toast.success("Gasto atualizado");
+          toast.success("Gasto atualizado — cronograma sincronizado quando vinculado");
         } else {
           const row = await createExpense(form);
           toast.success("Gasto criado");
@@ -117,6 +158,10 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
     });
   };
 
+  const linkedSchedule = form.scheduleItemId
+    ? scheduleItems.find((s) => s.id === form.scheduleItemId)
+    : null;
+
   return (
     <div className="kn-page">
       <Link href="/gastos" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2">
@@ -125,21 +170,82 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
 
       <PageHeader
         title={expense ? "Editar gasto" : "Novo gasto"}
-        description="Registre gastos anuais, mensais ou únicos. Use plano/variante para anotar mudanças (ex: Cursor IA Pro → Pro+)."
+        description="Gastos conversam com o cronograma: vincule itens com custo e o valor realizado é atualizado automaticamente."
         icon={Wallet}
       />
 
       <form onSubmit={onSubmit} className="space-y-6 max-w-3xl">
         <Card className="kn-card">
           <CardHeader className="kn-card-header py-4">
-            <CardTitle className="text-sm font-semibold">Identificação</CardTitle>
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-primary" />
+              Vínculo com cronograma
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 grid gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Item do cronograma (somente com custo)</Label>
+                <Select
+                  value={form.scheduleItemId ? String(form.scheduleItemId) : "none"}
+                  onValueChange={applyScheduleItem}
+                >
+                  <SelectTrigger><SelectValue placeholder="Nenhum — gasto avulso" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum — gasto avulso</SelectItem>
+                    {scheduleItems.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.title}
+                        {s.plannedValue ? ` · prev. ${formatCurrency(s.plannedValue)}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Este gasto tem custo financeiro?</Label>
+                <Select
+                  value={hasCost ? "sim" : "nao"}
+                  onValueChange={(v) => set("hasCost", v === "sim")}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sim">Sim — entra no financeiro</SelectItem>
+                    <SelectItem value="nao">Não — registro sem valor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {linkedSchedule && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+                <p className="font-medium text-primary">{linkedSchedule.title}</p>
+                <p className="text-muted-foreground text-xs mt-1">
+                  Previsto: {linkedSchedule.plannedValue ? formatCurrency(linkedSchedule.plannedValue) : "—"} ·{" "}
+                  Realizado no cronograma: {linkedSchedule.actualValue ? formatCurrency(linkedSchedule.actualValue) : "—"}
+                </p>
+                <Link href={`/cronograma/${linkedSchedule.id}`} className="text-xs text-primary hover:underline mt-1 inline-block">
+                  Abrir no cronograma
+                </Link>
+              </div>
+            )}
+            {!hasCost && (
+              <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
+                Gastos sem custo não entram nos totais do financeiro — útil para marcos do cronograma sem valor.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="kn-card">
+          <CardHeader className="kn-card-header py-4">
+            <CardTitle className="text-sm font-semibold">Identificação e plano</CardTitle>
           </CardHeader>
           <CardContent className="p-6 grid gap-4">
             <div className="grid gap-2">
               <Label>Nome / Descrição *</Label>
               <Input required value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Ex: Cursor IA" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Tipo de gasto *</Label>
                 <Select value={form.expenseType} onValueChange={(v) => set("expenseType", v)}>
@@ -152,13 +258,31 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>Plano / Variante</Label>
-                <Input value={form.planVariant} onChange={(e) => set("planVariant", e.target.value)} placeholder="Ex: Pro, Pro+" />
-              </div>
-              <div className="grid gap-2">
-                <Label>Data</Label>
+                <Label>Data inicial da compra</Label>
                 <Input type="date" value={form.purchaseDate} onChange={(e) => set("purchaseDate", e.target.value)} />
               </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Plano contratado</Label>
+                <Input
+                  value={form.contractedPlan}
+                  onChange={(e) => set("contractedPlan", e.target.value)}
+                  placeholder="Ex: Pro, Business"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Alteração de plano</Label>
+                <Input
+                  value={form.planChangeVariant}
+                  onChange={(e) => set("planChangeVariant", e.target.value)}
+                  placeholder="Ex: migrou para Pro+"
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>Data da alteração de plano</Label>
+              <Input type="date" value={form.planChangeDate} onChange={(e) => set("planChangeDate", e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label>Anotações do plano</Label>
@@ -172,7 +296,7 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
           </CardContent>
         </Card>
 
-        <Card className="kn-card">
+        <Card className={`kn-card ${!hasCost ? "opacity-60" : ""}`}>
           <CardHeader className="kn-card-header py-4">
             <CardTitle className="text-sm font-semibold">Valores e vínculos</CardTitle>
           </CardHeader>
@@ -183,6 +307,7 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
                 <Select
                   value={form.projectId ? String(form.projectId) : "none"}
                   onValueChange={(v) => set("projectId", v === "none" ? null : Number(v))}
+                  disabled={!hasCost}
                 >
                   <SelectTrigger><SelectValue placeholder="K&N Empresa" /></SelectTrigger>
                   <SelectContent>
@@ -198,6 +323,7 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
                 <Select
                   value={form.clientId ? String(form.clientId) : "none"}
                   onValueChange={(v) => set("clientId", v === "none" ? null : Number(v))}
+                  disabled={!hasCost}
                 >
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
@@ -211,16 +337,23 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="grid gap-2">
-                <Label>Valor total (R$) *</Label>
-                <Input type="number" step="0.01" required value={form.totalValue} onChange={(e) => set("totalValue", e.target.value)} />
+                <Label>Valor total (R$) {hasCost ? "*" : ""}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  required={hasCost}
+                  disabled={!hasCost}
+                  value={form.totalValue}
+                  onChange={(e) => set("totalValue", e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Cota Elaine</Label>
-                <Input type="number" step="0.01" value={form.elaineShare} onChange={(e) => set("elaineShare", e.target.value)} />
+                <Input type="number" step="0.01" disabled={!hasCost} value={form.elaineShare} onChange={(e) => set("elaineShare", e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <Label>Cota Kayky</Label>
-                <Input type="number" step="0.01" value={form.kaykyShare} onChange={(e) => set("kaykyShare", e.target.value)} />
+                <Input type="number" step="0.01" disabled={!hasCost} value={form.kaykyShare} onChange={(e) => set("kaykyShare", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -236,7 +369,7 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => set("status", v)}>
+                <Select value={form.status} onValueChange={(v) => set("status", v)} disabled={!hasCost}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {["Pago", "Pendente", "Parcial", "Cancelado"].map((s) => (
@@ -247,7 +380,7 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
               </div>
               <div className="grid gap-2">
                 <Label>Pago por</Label>
-                <Input value={form.paidBy} onChange={(e) => set("paidBy", e.target.value)} />
+                <Input disabled={!hasCost} value={form.paidBy} onChange={(e) => set("paidBy", e.target.value)} />
               </div>
             </div>
           </CardContent>
@@ -282,7 +415,10 @@ export function ExpenseFormPage({ expense, projects, clients, relatedExpenses = 
               >
                 <div>
                   <p className="font-medium text-sm">{formatDate(r.purchaseDate)}</p>
-                  <p className="text-xs text-muted-foreground">{r.planVariant || r.expenseType}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {r.contractedPlan || r.planVariant || r.expenseType}
+                    {r.planChangeVariant ? ` → ${r.planChangeVariant}` : ""}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold tabular-nums">{formatCurrency(r.totalValue)}</p>

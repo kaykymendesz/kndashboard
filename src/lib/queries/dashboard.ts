@@ -1,14 +1,25 @@
 import { db } from "@/lib/db";
 import { activities, expenses, scheduleItems, clients, projects } from "@/lib/db/schema";
+import type { Expense, ScheduleItem } from "@/lib/db/schema";
 
 function sumValues(items: { totalValue?: string | null }[]) {
   return items.reduce((sum, e) => sum + Number(e.totalValue ?? 0), 0);
 }
 
+function withCostExpenses(all: Expense[]) {
+  return all.filter((e) => e.hasCost !== false);
+}
+
+function withCostSchedule(all: ScheduleItem[]) {
+  return all.filter((s) => s.hasCost === true);
+}
+
 export async function getDashboardStats() {
-  const allExpenses = await db.select().from(expenses);
+  const allExpensesRaw = await db.select().from(expenses);
+  const allExpenses = withCostExpenses(allExpensesRaw);
   const allActivities = await db.select().from(activities);
-  const allSchedule = await db.select().from(scheduleItems);
+  const allScheduleRaw = await db.select().from(scheduleItems);
+  const allSchedule = withCostSchedule(allScheduleRaw);
   const allClients = await db.select().from(clients);
   const allProjects = await db.select().from(projects);
 
@@ -111,7 +122,8 @@ export async function getDashboardStats() {
 }
 
 export async function getFinancialSummary() {
-  const allExpenses = await db.select().from(expenses);
+  const allExpensesRaw = await db.select().from(expenses);
+  const allExpenses = withCostExpenses(allExpensesRaw);
 
   const byMonth = allExpenses.reduce<Record<string, number>>((acc, e) => {
     if (!e.purchaseDate) return acc;

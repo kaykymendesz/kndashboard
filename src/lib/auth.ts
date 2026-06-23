@@ -1,9 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { appUsers } from "@/lib/db/schema";
 import { getAuthSecret } from "@/lib/auth-secret";
 
-const users = [
+const fallbackUsers = [
   {
     id: "1",
     name: "Elaine Rebelo Anaya",
@@ -20,11 +23,45 @@ const users = [
   },
 ];
 
-async function verifyPassword(user: (typeof users)[0], password: string) {
+type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash?: string;
+  passwordPlain?: string;
+};
+
+async function findUserByEmail(email: string): Promise<AuthUser | null> {
+  const normalized = email.toLowerCase();
+
+  try {
+    const dbUser = await db.query.appUsers.findFirst({
+      where: eq(appUsers.email, normalized),
+    });
+    if (dbUser?.active) {
+      return {
+        id: String(dbUser.id),
+        name: dbUser.name,
+        email: dbUser.email,
+        passwordHash: dbUser.passwordHash,
+      };
+    }
+  } catch {
+    // Banco indisponível — usa fallback env
+  }
+
+  const fallback = fallbackUsers.find((u) => u.email.toLowerCase() === normalized);
+  return fallback ?? null;
+}
+
+async function verifyPassword(user: AuthUser, password: string) {
   if (user.passwordHash) {
     return bcrypt.compare(password, user.passwordHash);
   }
-  return password === user.passwordPlain;
+  if (user.passwordPlain) {
+    return password === user.passwordPlain;
+  }
+  return false;
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -40,7 +77,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+        const user = await findUserByEmail(email);
         if (!user) return null;
 
         const valid = await verifyPassword(user, password);

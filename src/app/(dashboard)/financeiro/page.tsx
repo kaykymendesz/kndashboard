@@ -3,7 +3,8 @@ import { MoneyStat } from "@/components/stat-card";
 import { PageHeader } from "@/components/page-header";
 import { getFinancialSummary } from "@/lib/queries/dashboard";
 import { formatCurrency } from "@/lib/format";
-import { Wallet, Users, PieChart } from "lucide-react";
+import Link from "next/link";
+import { PieChart, Pencil, Wallet, Users } from "lucide-react";
 import { FinancialCharts } from "@/components/financial-charts";
 import {
   Table,
@@ -81,17 +82,30 @@ export default async function FinanceiroPage() {
                   <TableHead className="font-semibold">Elaine</TableHead>
                   <TableHead className="font-semibold">Kayky</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {expenses.map((e) => (
                   <TableRow key={e.id} className="kn-row-hover">
-                    <TableCell className="font-medium">{e.description}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/gastos/${e.id}`} className="text-primary hover:underline">
+                        {e.description}
+                      </Link>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{e.category}</TableCell>
                     <TableCell className="tabular-nums font-medium">{formatCurrency(e.totalValue)}</TableCell>
                     <TableCell className="tabular-nums">{formatCurrency(e.elaineShare)}</TableCell>
                     <TableCell className="tabular-nums">{formatCurrency(e.kaykyShare)}</TableCell>
                     <TableCell><Badge variant="secondary">{e.status}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <Link
+                        href={`/gastos/${e.id}`}
+                        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+                      >
+                        <Pencil className="h-3.5 w-3.5" /> Editar
+                      </Link>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

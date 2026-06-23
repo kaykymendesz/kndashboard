@@ -41,6 +41,11 @@ export default async function ClienteAtendimentoPage({ params }: Props) {
               <FileText className="h-4 w-4" /> Nova cotação
             </Link>
           </Button>
+          <Button asChild variant="outline" className="gap-2 max-md:flex-1">
+            <Link href={`/clientes/${slug}/editar?returnTo=/atendimento/clientes/${slug}`}>
+              Editar cliente
+            </Link>
+          </Button>
         </div>
       </PageHeader>
 

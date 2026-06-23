@@ -21,13 +21,19 @@ export type ScheduleInput = {
   responsible?: string;
   notes?: string;
   flowId?: number | null;
+  hasCost?: boolean;
 };
 
 function mapScheduleInput(input: ScheduleInput) {
-  const planned = input.plannedValue ? parseNumber(input.plannedValue) : null;
-  const actual = input.actualValue ? parseNumber(input.actualValue) : null;
+  const hasCost = input.hasCost === true;
+  const planned = hasCost && input.plannedValue ? parseNumber(input.plannedValue) : null;
+  const actual = hasCost && input.actualValue ? parseNumber(input.actualValue) : null;
   const diff =
-    planned !== null && actual !== null ? actual - planned : input.difference ? parseNumber(input.difference) : null;
+    planned !== null && actual !== null
+      ? actual - planned
+      : input.difference
+        ? parseNumber(input.difference)
+        : null;
 
   return {
     plannedDate: parseDate(input.plannedDate ?? ""),
@@ -36,12 +42,13 @@ function mapScheduleInput(input: ScheduleInput) {
     category: input.category ?? "",
     priority: input.priority ?? "Média",
     status: input.status ?? "Planejado",
-    plannedValue: planned !== null ? String(planned) : null,
-    actualValue: actual !== null ? String(actual) : null,
+    plannedValue: planned !== null ? String(planned) : hasCost ? input.plannedValue ?? null : null,
+    actualValue: actual !== null ? String(actual) : hasCost ? input.actualValue ?? null : null,
     difference: diff !== null ? String(diff) : null,
     responsible: input.responsible ?? "",
     notes: input.notes ?? "",
     flowId: input.flowId ?? null,
+    hasCost,
     updatedAt: new Date(),
   };
 }
@@ -61,6 +68,7 @@ export async function createScheduleItem(input: ScheduleInput) {
 
   revalidatePath("/cronograma");
   revalidatePath("/gestao");
+  revalidatePath("/gastos");
   return item;
 }
 
@@ -69,17 +77,26 @@ export async function updateScheduleItem(id: number, input: ScheduleInput) {
   revalidatePath("/cronograma");
   revalidatePath(`/cronograma/${id}`);
   revalidatePath("/gestao");
+  revalidatePath("/gastos");
 }
 
 export async function deleteScheduleItem(id: number) {
   await db.delete(scheduleItems).where(eq(scheduleItems.id, id));
   revalidatePath("/cronograma");
   revalidatePath("/gestao");
+  revalidatePath("/gastos");
 }
 
 export async function getScheduleItems() {
   return db.query.scheduleItems.findMany({
     orderBy: (s, { asc }) => [asc(s.plannedDate)],
+  });
+}
+
+export async function getScheduleItemsWithCost() {
+  return db.query.scheduleItems.findMany({
+    where: eq(scheduleItems.hasCost, true),
+    orderBy: (s, { asc }) => [asc(s.plannedDate), asc(s.title)],
   });
 }
 

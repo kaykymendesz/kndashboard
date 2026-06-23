@@ -133,7 +133,10 @@ export function AppSidebar({
 
       <SidebarFooter className="border-t border-sidebar-border/50 p-4 space-y-3">
         {userName && (
-          <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/50 px-3 py-2.5">
+          <Link
+            href="/perfil"
+            className="flex items-center gap-3 rounded-lg bg-sidebar-accent/50 px-3 py-2.5 hover:bg-sidebar-accent transition-colors"
+          >
             <Avatar className="h-8 w-8 ring-2 ring-white/10">
               <AvatarFallback className="bg-primary text-[10px] font-semibold text-white">
                 {getInitials(userName)}
@@ -141,9 +144,9 @@ export function AppSidebar({
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-white truncate">{userName}</p>
-              <p className="text-[10px] text-sidebar-foreground/50">Administrador</p>
+              <p className="text-[10px] text-sidebar-foreground/50">Ver perfil</p>
             </div>
-          </div>
+          </Link>
         )}
         <Link
           href="/"

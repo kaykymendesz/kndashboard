@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Pencil } from "lucide-react";
 import { getAttendanceCaseById, getAttendanceSteps } from "@/lib/actions/attendance";
 import { getClientById } from "@/lib/actions/clients";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { StartAttendanceButton } from "@/components/start-attendance-button";
 import { formatDate } from "@/lib/format";
 
@@ -45,9 +46,16 @@ export default async function DemandaDetailPage({ params }: Props) {
           <p className="text-muted-foreground mt-2 whitespace-pre-wrap">{demand.description || "Sem descrição"}</p>
           <p className="text-xs text-muted-foreground mt-2">Criado em {formatDate(demand.createdAt)}</p>
         </div>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-end gap-2 shrink-0">
         {demand.status === "Aguardando" && (
           <StartAttendanceButton caseId={demand.id} clientSlug={client.slug!} />
         )}
+        <Button variant="outline" size="sm" asChild className="gap-2">
+          <Link href={`/atendimento/demandas/${caseId}/editar`}>
+            <Pencil className="h-3.5 w-3.5" /> Editar
+          </Link>
+        </Button>
+        </div>
       </div>
 
       {steps.length > 0 && (

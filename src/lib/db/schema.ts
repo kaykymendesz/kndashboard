@@ -62,6 +62,7 @@ export const scheduleItems = pgTable("schedule_items", {
   difference: numeric("difference", { precision: 12, scale: 2 }),
   responsible: varchar("responsible", { length: 100 }).default(""),
   notes: text("notes").default(""),
+  hasCost: boolean("has_cost").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -98,6 +99,11 @@ export const expenses = pgTable("expenses", {
   autoRenew: boolean("auto_renew").default(false),
   expirationDate: timestamp("expiration_date"),
   registeredBy: varchar("registered_by", { length: 100 }).default(""),
+  scheduleItemId: integer("schedule_item_id").references(() => scheduleItems.id),
+  hasCost: boolean("has_cost").default(true),
+  contractedPlan: varchar("contracted_plan", { length: 100 }).default(""),
+  planChangeVariant: varchar("plan_change_variant", { length: 100 }).default(""),
+  planChangeDate: timestamp("plan_change_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -240,6 +246,18 @@ export type ScheduleProcess = typeof scheduleProcesses.$inferSelect;
 export type Quotation = typeof quotations.$inferSelect;
 export type AttendanceCase = typeof attendanceCases.$inferSelect;
 export type AttendanceStep = typeof attendanceSteps.$inferSelect;
+
+export const appUsers = pgTable("app_users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 200 }).notNull().unique(),
+  name: varchar("name", { length: 200 }).notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type AppUser = typeof appUsers.$inferSelect;
 
 export const EXPENSE_TYPES = ["Anual", "Mensal", "Único"] as const;
 export type ExpenseType = (typeof EXPENSE_TYPES)[number];

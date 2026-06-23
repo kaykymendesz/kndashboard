@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ActivitiesManager } from "@/components/activities-manager";
+import { ProjectInfoEditor } from "@/components/project-info-editor";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { Activity, Expense, Project, ProjectInfo } from "@/lib/db/schema";
 import { FolderKanban, ArrowLeft } from "lucide-react";
@@ -44,13 +45,6 @@ export function ProjectDetailTabs({
   const defaultTab = searchParams.get("tab") ?? "detalhes";
   const validTabs = showActivities ? ["detalhes", "gastos", "atividades"] : ["detalhes", "gastos"];
   const initialTab = validTabs.includes(defaultTab) ? defaultTab : "detalhes";
-
-  const grouped = details.reduce<Record<string, ProjectInfo[]>>((acc, item) => {
-    const key = item.section.trim();
-    acc[key] = acc[key] ?? [];
-    acc[key].push(item);
-    return acc;
-  }, {});
 
   return (
     <div className="kn-page">
@@ -85,28 +79,7 @@ export function ProjectDetailTabs({
         </TabsList>
 
         <TabsContent value="detalhes" className="space-y-4">
-          {Object.keys(grouped).length === 0 ? (
-            <Card className="kn-card p-8 text-center text-muted-foreground text-sm">
-              Nenhum detalhe cadastrado para este projeto.
-            </Card>
-          ) : (
-            Object.entries(grouped).map(([section, rows]) => (
-              <Card key={section} className="kn-card overflow-hidden">
-                <CardHeader className="kn-card-header py-3">
-                  <CardTitle className="text-sm font-semibold">{section}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 divide-y divide-border/50">
-                  {rows.map((row) => (
-                    <div key={row.id} className="grid sm:grid-cols-3 gap-2 px-6 py-3 text-sm kn-row-hover">
-                      <span className="font-medium text-muted-foreground">{row.field}</span>
-                      <span className="font-medium">{row.value}</span>
-                      <span className="text-muted-foreground text-xs">{row.notes}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))
-          )}
+          <ProjectInfoEditor projectId={project.id} items={details} />
         </TabsContent>
 
         <TabsContent value="gastos">
@@ -134,7 +107,11 @@ export function ProjectDetailTabs({
                     <TableBody>
                       {expenses.map((e) => (
                         <TableRow key={e.id} className="kn-row-hover">
-                          <TableCell className="font-medium">{e.description}</TableCell>
+                          <TableCell className="font-medium">
+                            <Link href={`/gastos/${e.id}`} className="hover:text-primary hover:underline">
+                              {e.description}
+                            </Link>
+                          </TableCell>
                           <TableCell>{e.category}</TableCell>
                           <TableCell>{formatDate(e.purchaseDate)}</TableCell>
                           <TableCell>{e.vendor}</TableCell>

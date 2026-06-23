@@ -20,6 +20,9 @@ export async function createProjectInfo(input: ProjectInfoInput) {
   });
   revalidatePath("/projeto");
   revalidatePath("/projetos");
+  if (input.projectId) {
+    revalidatePath(`/projetos/[slug]`, "page");
+  }
   revalidatePath("/gestao");
 }
 

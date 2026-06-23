@@ -1,12 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ListSearchBar } from "@/components/list-search-bar";
 import {
   Table,
   TableBody,
@@ -23,16 +24,32 @@ type ExpenseRow = {
   description: string;
   expenseType: string | null;
   planVariant: string | null;
+  contractedPlan: string | null;
   category: string | null;
   purchaseDate: Date | null;
   totalValue: string | null;
   status: string | null;
+  hasCost: boolean | null;
   projectName: string;
   clientName: string;
+  scheduleTitle: string;
 };
 
 export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
   const [pending, startTransition] = useTransition();
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (e) =>
+        e.description.toLowerCase().includes(q) ||
+        e.projectName.toLowerCase().includes(q) ||
+        e.clientName.toLowerCase().includes(q) ||
+        (e.category?.toLowerCase().includes(q) ?? false)
+    );
+  }, [items, search]);
 
   const handleDelete = (id: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,12 +73,19 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
         </Button>
       </PageHeader>
 
-      <div className="kn-table-wrap overflow-x-auto">
+      <ListSearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Buscar por descrição, projeto, cliente ou categoria..."
+      />
+
+      <div className="kn-table-wrap overflow-x-auto mt-4">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Descrição</TableHead>
               <TableHead>Tipo</TableHead>
+              <TableHead>Cronograma</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Projeto</TableHead>
               <TableHead>Cliente</TableHead>
@@ -72,7 +96,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => (
+            {filtered.map((item) => (
               <TableRow key={item.id} className="kn-row-hover">
                 <TableCell>
                   <Link href={`/gastos/${item.id}`} className="font-medium text-primary hover:underline">
@@ -80,7 +104,13 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
                   </Link>
                 </TableCell>
                 <TableCell><Badge variant="outline">{item.expenseType ?? "Único"}</Badge></TableCell>
-                <TableCell className="text-muted-foreground text-sm">{item.planVariant || "—"}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{item.scheduleTitle !== "—" ? item.scheduleTitle : "—"}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {item.contractedPlan || item.planVariant || "—"}
+                  {item.hasCost === false && (
+                    <Badge variant="secondary" className="ml-1 text-[10px]">Sem custo</Badge>
+                  )}
+                </TableCell>
                 <TableCell className="text-sm">{item.projectName}</TableCell>
                 <TableCell className="text-sm">{item.clientName}</TableCell>
                 <TableCell>
