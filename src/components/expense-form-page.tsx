@@ -64,6 +64,7 @@ const emptyForm: ExpenseInput = {
   paymentType: "",
   paymentCard: "",
   paidBy: "",
+  dueDate: "",
   elainePending: "0",
   kaykyPending: "0",
   hasCost: true,
@@ -511,7 +512,7 @@ export function ExpenseFormPage({
                 <Input value={form.vendor} onChange={(e) => set("vendor", e.target.value)} />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Status</Label>
                 <Select value={form.status} onValueChange={(v) => set("status", v)} disabled={!hasCost}>
@@ -522,6 +523,15 @@ export function ExpenseFormPage({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Data de vencimento</Label>
+                <Input
+                  type="date"
+                  disabled={!hasCost}
+                  value={form.dueDate ?? ""}
+                  onChange={(e) => set("dueDate", e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Pago por</Label>
