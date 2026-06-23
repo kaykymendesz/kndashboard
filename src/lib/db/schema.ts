@@ -76,6 +76,7 @@ export const expenses = pgTable("expenses", {
   planVariant: varchar("plan_variant", { length: 100 }).default(""),
   planNotes: text("plan_notes").default(""),
   category: varchar("category", { length: 100 }).default(""),
+  vendorId: integer("vendor_id").references(() => vendors.id),
   vendor: varchar("vendor", { length: 200 }).default(""),
   purchaseDate: timestamp("purchase_date"),
   financialResponsible: varchar("financial_responsible", { length: 100 }).default(""),
@@ -107,6 +108,33 @@ export const expenses = pgTable("expenses", {
   planChangeDate: timestamp("plan_change_date"),
   paymentType: varchar("payment_type", { length: 50 }).default(""),
   paymentCard: varchar("payment_card", { length: 120 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const vendors = pgTable("vendors", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  slug: varchar("slug", { length: 120 }).notNull().unique(),
+  category: varchar("category", { length: 100 }).default(""),
+  email: varchar("email", { length: 200 }).default(""),
+  phone: varchar("phone", { length: 50 }).default(""),
+  notes: text("notes").default(""),
+  status: varchar("status", { length: 50 }).default("Ativo"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const revenues = pgTable("revenues", {
+  id: serial("id").primaryKey(),
+  description: varchar("description", { length: 300 }).notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull().default("0"),
+  receivedDate: timestamp("received_date"),
+  category: varchar("category", { length: 100 }).default(""),
+  status: varchar("status", { length: 50 }).default("Recebido"),
+  projectId: integer("project_id").references(() => projects.id),
+  clientId: integer("client_id").references(() => clients.id),
+  notes: text("notes").default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -254,6 +282,8 @@ export type Activity = typeof activities.$inferSelect;
 export type ScheduleItem = typeof scheduleItems.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
 export type ExpensePlanChange = typeof expensePlanChanges.$inferSelect;
+export type Vendor = typeof vendors.$inferSelect;
+export type Revenue = typeof revenues.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type MenuItem = typeof menuItems.$inferSelect;
 export type Classification = typeof classifications.$inferSelect;
@@ -298,3 +328,7 @@ export const DEFAULT_ATTENDANCE_STEPS = [
 ] as const;
 
 export const WIKINAYA_SLUG = "wikinaya";
+export const COMPANY_PROJECT_SLUG = "kn-empresa";
+
+export const REVENUE_STATUSES = ["Recebido", "Pendente"] as const;
+export type RevenueStatus = (typeof REVENUE_STATUSES)[number];

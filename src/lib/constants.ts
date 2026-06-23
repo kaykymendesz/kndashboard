@@ -10,6 +10,8 @@ import {
   FolderKanban,
   Settings,
   Headphones,
+  Truck,
+  TrendingUp,
 } from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
@@ -23,6 +25,8 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   FolderKanban,
   Settings,
   Headphones,
+  Truck,
+  TrendingUp,
 };
 
 export const ICON_OPTIONS = Object.keys(ICON_MAP);
@@ -49,14 +53,16 @@ export const COMPANY_SHORT_NAME = "K&N Desenvolvimento de Software";
 export const DEFAULT_MENUS = [
   { label: "Visão Geral", href: "/gestao", icon: "LayoutDashboard", groupLabel: "Navegação", sortOrder: 1 },
   { label: "Financeiro", href: "/financeiro", icon: "PieChart", groupLabel: "Navegação", sortOrder: 2 },
-  { label: "Gastos", href: "/gastos", icon: "Wallet", groupLabel: "Navegação", sortOrder: 3 },
-  { label: "Projeto Wikinaya", href: "/projetos/wikinaya", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 4 },
-  { label: "Projetos", href: "/projetos", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 5 },
-  { label: "Cronograma", href: "/cronograma", icon: "Calendar", groupLabel: "Navegação", sortOrder: 6 },
-  { label: "Clientes", href: "/clientes", icon: "Users", groupLabel: "Navegação", sortOrder: 7 },
-  { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 8 },
-  { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 9 },
-  { label: "Atendimento a Clientes", href: "/atendimento", icon: "Headphones", groupLabel: "Atendimento", sortOrder: 10 },
+  { label: "Lucro", href: "/lucro", icon: "TrendingUp", groupLabel: "Navegação", sortOrder: 3 },
+  { label: "Gastos", href: "/gastos", icon: "Wallet", groupLabel: "Navegação", sortOrder: 4 },
+  { label: "Fornecedores", href: "/fornecedores", icon: "Truck", groupLabel: "Navegação", sortOrder: 5 },
+  { label: "Projeto Wikinaya", href: "/projetos/wikinaya", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 6 },
+  { label: "Projetos", href: "/projetos", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 7 },
+  { label: "Cronograma", href: "/cronograma", icon: "Calendar", groupLabel: "Navegação", sortOrder: 8 },
+  { label: "Clientes", href: "/clientes", icon: "Users", groupLabel: "Navegação", sortOrder: 9 },
+  { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 10 },
+  { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 11 },
+  { label: "Atendimento a Clientes", href: "/atendimento", icon: "Headphones", groupLabel: "Atendimento", sortOrder: 12 },
 ] as const;
 
 export const DEFAULT_ATENDIMENTO_MENUS = [

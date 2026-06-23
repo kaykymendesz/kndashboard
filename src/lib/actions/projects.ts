@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { projects, projectInfo, expenses, activities, WIKINAYA_SLUG } from "@/lib/db/schema";
+import { projects, projectInfo, expenses, activities, COMPANY_PROJECT_SLUG, WIKINAYA_SLUG } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -19,8 +19,10 @@ export async function getProjects() {
     orderBy: (p, { asc }) => [asc(p.name)],
   });
 
+  const operational = all.filter((p) => p.slug !== COMPANY_PROJECT_SLUG);
+
   return Promise.all(
-    all.map(async (project) => {
+    operational.map(async (project) => {
       const expenseRows = await db
         .select({
           total: sql<string>`coalesce(sum(${expenses.totalValue}), 0)`,
@@ -42,6 +44,13 @@ export async function getProjects() {
       };
     })
   );
+}
+
+export async function getOperationalProjects() {
+  return db.query.projects.findMany({
+    where: (p, { ne }) => ne(p.slug, COMPANY_PROJECT_SLUG),
+    orderBy: (p, { asc }) => [asc(p.name)],
+  });
 }
 
 export async function getProjectBySlug(slug: string) {

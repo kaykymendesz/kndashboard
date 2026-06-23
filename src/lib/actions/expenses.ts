@@ -3,16 +3,12 @@
 import { db } from "@/lib/db";
 import { expenses, expensePlanChanges, scheduleItems } from "@/lib/db/schema";
 import { parseDate, parseNumber } from "@/lib/format";
+import { getEffectivePlanValue, splitPartnerShares, type PlanChangeInput } from "@/lib/expense-rateio";
+import { statusFromSettlement } from "@/lib/expense-settlement";
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export type PlanChangeInput = {
-  id?: number;
-  planName: string;
-  planValue?: string;
-  changeDate?: string;
-  notes?: string;
-};
+export type { PlanChangeInput };
 
 export type ExpenseInput = {
   description: string;
@@ -26,6 +22,7 @@ export type ExpenseInput = {
   planChanges?: PlanChangeInput[];
   category?: string;
   vendor?: string;
+  vendorId?: number | null;
   purchaseDate?: string;
   financialResponsible?: string;
   totalValue: string;
@@ -58,11 +55,39 @@ export type ExpenseInput = {
 
 function mapExpenseInput(input: ExpenseInput) {
   const hasCost = input.hasCost !== false;
-  const totalValue = hasCost ? String(parseNumber(input.totalValue)) : "0";
   const paymentType = input.paymentType ?? input.paymentMethod ?? "";
+  let status = input.status ?? "Pendente";
 
   const validChanges = (input.planChanges ?? []).filter((c) => c.planName.trim());
   const lastChange = validChanges[validChanges.length - 1];
+
+  const effectivePlanValue = hasCost ? getEffectivePlanValue(input) : 0;
+  let totalValue = hasCost ? String(parseNumber(input.totalValue)) : "0";
+  let elaineShare = hasCost ? String(parseNumber(input.elaineShare)) : "0";
+  let kaykyShare = hasCost ? String(parseNumber(input.kaykyShare)) : "0";
+  let elainePending = hasCost ? String(parseNumber(input.elainePending)) : "0";
+  let kaykyPending = hasCost ? String(parseNumber(input.kaykyPending)) : "0";
+
+  if (effectivePlanValue > 0) {
+    totalValue = String(effectivePlanValue);
+    const { elaine, kayky } = splitPartnerShares(effectivePlanValue);
+    elaineShare = String(elaine);
+    kaykyShare = String(kayky);
+    elainePending = input.elaineSettled ? "0" : String(elaine);
+    kaykyPending = input.kaykySettled ? "0" : String(kayky);
+  }
+
+  const derivedStatus = statusFromSettlement({
+    elainePending,
+    kaykyPending,
+    elaineSettled: input.elaineSettled,
+    kaykySettled: input.kaykySettled,
+    status,
+  });
+
+  if (status !== "Cancelado" && (input.paidBy || input.elaineSettled || input.kaykySettled)) {
+    status = derivedStatus;
+  }
 
   return {
     description: input.description,
@@ -78,17 +103,18 @@ function mapExpenseInput(input: ExpenseInput) {
     planNotes: input.planNotes ?? "",
     category: input.category ?? "",
     vendor: input.vendor ?? "",
+    vendorId: input.vendorId ?? null,
     purchaseDate: parseDate(input.purchaseDate ?? ""),
     financialResponsible: input.financialResponsible ?? "",
     totalValue,
-    elaineShare: hasCost ? String(parseNumber(input.elaineShare)) : "0",
-    kaykyShare: hasCost ? String(parseNumber(input.kaykyShare)) : "0",
+    elaineShare,
+    kaykyShare,
     isInstallment: input.isInstallment ?? false,
     installmentCount: parseNumber(input.installmentCount) || 1,
     installmentValue: String(parseNumber(input.installmentValue)),
     paidInstallments: parseNumber(input.paidInstallments),
     remainingInstallments: parseNumber(input.remainingInstallments),
-    status: input.status ?? "Pendente",
+    status,
     dueDate: parseDate(input.dueDate ?? ""),
     paymentMethod: paymentType,
     paymentType,
@@ -96,8 +122,8 @@ function mapExpenseInput(input: ExpenseInput) {
     paidBy: input.paidBy ?? "",
     elaineSettled: input.elaineSettled ?? false,
     kaykySettled: input.kaykySettled ?? false,
-    elainePending: hasCost ? String(parseNumber(input.elainePending)) : "0",
-    kaykyPending: hasCost ? String(parseNumber(input.kaykyPending)) : "0",
+    elainePending,
+    kaykyPending,
     linkedEmail: input.linkedEmail ?? "",
     autoRenew: input.autoRenew ?? false,
     expirationDate: parseDate(input.expirationDate ?? ""),
@@ -159,6 +185,8 @@ function revalidateExpensePaths(id?: number) {
   revalidatePath("/projetos");
   revalidatePath("/gestao");
   revalidatePath("/cronograma");
+  revalidatePath("/fornecedores");
+  revalidatePath("/lucro");
   if (id) revalidatePath(`/gastos/${id}`);
 }
 

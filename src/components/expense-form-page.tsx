@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Wallet, Link2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Wallet, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,13 @@ import {
   type ExpenseInput,
   type PlanChangeInput,
 } from "@/lib/actions/expenses";
+import { applyPlanChangeToForm, applyPlanValueToRateio, syncFormRateioFromPlan } from "@/lib/expense-rateio";
+import {
+  applyVendorPayer,
+  payerSelectValue,
+  togglePartnerSettled,
+  type PartnerPayer,
+} from "@/lib/expense-settlement";
 import {
   EXPENSE_TYPES,
   PAYMENT_TYPES,
@@ -34,14 +41,17 @@ import {
   type ExpensePlanChange,
   type Project,
   type ScheduleItem,
+  type Vendor,
 } from "@/lib/db/schema";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 type Props = {
   expense?: Expense;
   projects: Project[];
   clients: Client[];
-  scheduleItems: ScheduleItem[];
+  vendors: Vendor[];
+  scheduleItems?: ScheduleItem[];
   planChanges?: ExpensePlanChange[];
   relatedExpenses?: Expense[];
   initialScheduleId?: number | null;
@@ -55,6 +65,7 @@ const emptyForm: ExpenseInput = {
   planNotes: "",
   category: "",
   vendor: "",
+  vendorId: null,
   purchaseDate: "",
   financialResponsible: "",
   totalValue: "0",
@@ -65,6 +76,8 @@ const emptyForm: ExpenseInput = {
   paymentCard: "",
   paidBy: "",
   dueDate: "",
+  elaineSettled: false,
+  kaykySettled: false,
   elainePending: "0",
   kaykyPending: "0",
   hasCost: true,
@@ -94,6 +107,7 @@ function toForm(expense: Expense, planChanges: ExpensePlanChange[]): ExpenseInpu
     planChanges: toPlanChanges(planChanges),
     category: expense.category ?? "",
     vendor: expense.vendor ?? "",
+    vendorId: expense.vendorId ?? null,
     purchaseDate: toInputDate(expense.purchaseDate),
     financialResponsible: expense.financialResponsible ?? "",
     totalValue: String(expense.totalValue ?? 0),
@@ -108,6 +122,8 @@ function toForm(expense: Expense, planChanges: ExpensePlanChange[]): ExpenseInpu
     paymentType: expense.paymentType ?? expense.paymentMethod ?? "",
     paymentCard: expense.paymentCard ?? "",
     paidBy: expense.paidBy ?? "",
+    elaineSettled: expense.elaineSettled ?? false,
+    kaykySettled: expense.kaykySettled ?? false,
     elainePending: String(expense.elainePending ?? 0),
     kaykyPending: String(expense.kaykyPending ?? 0),
     linkedEmail: expense.linkedEmail ?? "",
@@ -121,7 +137,8 @@ export function ExpenseFormPage({
   expense,
   projects,
   clients,
-  scheduleItems,
+  vendors,
+  scheduleItems = [],
   planChanges = [],
   relatedExpenses = [],
   initialScheduleId,
@@ -152,40 +169,25 @@ export function ExpenseFormPage({
   const set = (key: keyof ExpenseInput, value: string | number | null | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const applyScheduleItem = (scheduleId: string) => {
-    if (scheduleId === "none") {
-      set("scheduleItemId", null);
-      return;
-    }
-    const item = scheduleItems.find((s) => String(s.id) === scheduleId);
-    if (!item) return;
-    setForm((f) => ({
-      ...f,
-      scheduleItemId: item.id,
-      description: f.description || item.title,
-      category: f.category || item.category || "",
-      totalValue: f.totalValue === "0" && item.plannedValue ? String(item.plannedValue) : f.totalValue,
-    }));
-  };
-
   const addPlanChange = () => {
     if (!draftChange.planName.trim()) {
       toast.error("Informe o nome do novo plano.");
       return;
     }
-    setForm((f) => ({
-      ...f,
-      planChanges: [...(f.planChanges ?? []), { ...draftChange, planName: draftChange.planName.trim() }],
-    }));
+    const change = { ...draftChange, planName: draftChange.planName.trim() };
+    setForm((f) => applyPlanChangeToForm(f, change));
     setDraftChange(emptyDraft);
-    toast.success("Alteração incluída — salve o gasto para gravar.");
+    toast.success("Alteração incluída — valores de rateio atualizados.");
   };
 
   const removePlanChange = (index: number) => {
-    setForm((f) => ({
-      ...f,
-      planChanges: (f.planChanges ?? []).filter((_, i) => i !== index),
-    }));
+    setForm((f) => {
+      const next = {
+        ...f,
+        planChanges: (f.planChanges ?? []).filter((_, i) => i !== index),
+      };
+      return syncFormRateioFromPlan(next);
+    });
   };
 
   const onSubmit = (e: React.FormEvent) => {
@@ -217,10 +219,6 @@ export function ExpenseFormPage({
     });
   };
 
-  const linkedSchedule = form.scheduleItemId
-    ? scheduleItems.find((s) => s.id === form.scheduleItemId)
-    : null;
-
   return (
     <div className="kn-page">
       <Link href="/gastos" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-2">
@@ -229,61 +227,11 @@ export function ExpenseFormPage({
 
       <PageHeader
         title={expense ? "Editar gasto" : "Novo gasto"}
-        description="Rateio por centro de custo (K&N ou projeto), pagamento, planos e vínculo com cronograma."
+        description="Plano e valores sincronizam o rateio entre sócios. Centro de custo K&N ou projeto."
         icon={Wallet}
       />
 
       <form onSubmit={onSubmit} className="space-y-6 max-w-3xl">
-        <Card className="kn-card">
-          <CardHeader className="kn-card-header py-4">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Link2 className="h-4 w-4 text-primary" />
-              Vínculo com cronograma
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 grid gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Item do cronograma (somente com custo)</Label>
-                <Select
-                  value={form.scheduleItemId ? String(form.scheduleItemId) : "none"}
-                  onValueChange={applyScheduleItem}
-                >
-                  <SelectTrigger><SelectValue placeholder="Nenhum — gasto avulso" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum — gasto avulso</SelectItem>
-                    {scheduleItems.map((s) => (
-                      <SelectItem key={s.id} value={String(s.id)}>
-                        {s.title}
-                        {s.plannedValue ? ` · prev. ${formatCurrency(s.plannedValue)}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label>Este gasto tem custo financeiro?</Label>
-                <Select value={hasCost ? "sim" : "nao"} onValueChange={(v) => set("hasCost", v === "sim")}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sim">Sim — entra no financeiro</SelectItem>
-                    <SelectItem value="nao">Não — registro sem valor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {linkedSchedule && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-                <p className="font-medium text-primary">{linkedSchedule.title}</p>
-                <p className="text-muted-foreground text-xs mt-1">
-                  Previsto: {linkedSchedule.plannedValue ? formatCurrency(linkedSchedule.plannedValue) : "—"} ·{" "}
-                  Realizado: {linkedSchedule.actualValue ? formatCurrency(linkedSchedule.actualValue) : "—"}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         <Card className="kn-card">
           <CardHeader className="kn-card-header py-4">
             <CardTitle className="text-sm font-semibold">Identificação e plano</CardTitle>
@@ -326,7 +274,9 @@ export function ExpenseFormPage({
                   step="0.01"
                   disabled={!hasCost}
                   value={form.contractedPlanValue}
-                  onChange={(e) => set("contractedPlanValue", e.target.value)}
+                  onChange={(e) =>
+                    setForm((f) => applyPlanValueToRateio({ ...f, contractedPlanValue: e.target.value }, e.target.value))
+                  }
                   placeholder="Ex: 104.23"
                 />
               </div>
@@ -336,7 +286,7 @@ export function ExpenseFormPage({
               <div>
                 <p className="text-sm font-semibold">Alterações de plano</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Inclua cada mudança de plano com valor e data — útil quando o serviço muda várias vezes (ex: Pro → Pro+).
+                  Inclua cada mudança de plano com valor e data — o valor mais recente atualiza total e rateio (50/50).
                 </p>
               </div>
 
@@ -403,10 +353,23 @@ export function ExpenseFormPage({
             <CardTitle className="text-sm font-semibold">Valores, rateio e pagamento</CardTitle>
           </CardHeader>
           <CardContent className="p-6 grid gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Este gasto tem custo financeiro?</Label>
+                <Select value={hasCost ? "sim" : "nao"} onValueChange={(v) => set("hasCost", v === "sim")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sim">Sim — entra no financeiro</SelectItem>
+                    <SelectItem value="nao">Não — registro sem valor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <p className="text-xs text-muted-foreground rounded-lg bg-muted/40 px-3 py-2">
-              <strong>Centro de custo:</strong> escolha K&N Empresa para gastos operacionais (calculados separados) ou um
-              projeto específico (Wikinaya, etc.). <strong>Cliente</strong> só quando o gasto for do cliente — gastos
-              internos K&N ficam sem cliente.
+              <strong>Plano → rateio:</strong> valor do plano contratado ou da última alteração preenche automaticamente
+              total, cota Elaine e cota Kayky (metade para cada).{" "}
+              <strong>Centro de custo:</strong> K&N Empresa ou projeto — cliente só quando for gasto do cliente.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -509,21 +472,123 @@ export function ExpenseFormPage({
               </div>
               <div className="grid gap-2">
                 <Label>Fornecedor</Label>
-                <Input value={form.vendor} onChange={(e) => set("vendor", e.target.value)} />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => set("status", v)} disabled={!hasCost}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={form.vendorId ? String(form.vendorId) : "none"}
+                  onValueChange={(v) => {
+                    if (v === "none") {
+                      setForm((f) => ({ ...f, vendorId: null, vendor: "" }));
+                      return;
+                    }
+                    const selected = vendors.find((item) => String(item.id) === v);
+                    setForm((f) => ({
+                      ...f,
+                      vendorId: Number(v),
+                      vendor: selected?.name ?? f.vendor,
+                    }));
+                  }}
+                  disabled={!hasCost}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {["Pago", "Pendente", "Parcial", "Cancelado"].map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem value="none">Selecione ou use texto abaixo</SelectItem>
+                    {vendors.map((v) => (
+                      <SelectItem key={v.id} value={String(v.id)}>{v.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <Input
+                  disabled={!hasCost}
+                  value={form.vendor}
+                  onChange={(e) => setForm((f) => ({ ...f, vendor: e.target.value, vendorId: null }))}
+                  placeholder="Ou digite o nome do fornecedor"
+                />
+                <Link href="/fornecedores" className="text-[11px] text-primary hover:underline">
+                  Gerenciar fornecedores
+                </Link>
               </div>
+            </div>
+            <div className="rounded-xl border border-border/70 p-4 space-y-4 bg-muted/20">
+              <div>
+                <p className="text-sm font-semibold">Quem pagou e quitação entre sócios</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Informe quem pagou o fornecedor e marque quando cada sócio quitou a própria cota.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Quem pagou ao fornecedor?</Label>
+                  <Select
+                    value={payerSelectValue(form.paidBy)}
+                    onValueChange={(v) =>
+                      setForm((f) =>
+                        applyVendorPayer(f, v === "none" ? "" : (v as PartnerPayer))
+                      )
+                    }
+                    disabled={!hasCost}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Ainda não pago" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ainda não pago</SelectItem>
+                      <SelectItem value="Elaine">Elaine pagou</SelectItem>
+                      <SelectItem value="Kayky">Kayky pagou</SelectItem>
+                      <SelectItem value="Ambos">Ambos pagaram (partes iguais)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Status do gasto</Label>
+                  <Select
+                    value={form.status}
+                    onValueChange={(v) => setForm((f) => syncFormRateioFromPlan({ ...f, status: v }))}
+                    disabled={!hasCost}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["Pago", "Pendente", "Parcial", "Cancelado"].map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(
+                  [
+                    { key: "elaine" as const, label: "Elaine", share: form.elaineShare, pending: form.elainePending, settled: form.elaineSettled },
+                    { key: "kayky" as const, label: "Kayky", share: form.kaykyShare, pending: form.kaykyPending, settled: form.kaykySettled },
+                  ] as const
+                ).map((partner) => (
+                  <button
+                    key={partner.key}
+                    type="button"
+                    disabled={!hasCost}
+                    onClick={() =>
+                      setForm((f) => togglePartnerSettled(f, partner.key, !partner.settled))
+                    }
+                    className={cn(
+                      "rounded-lg border px-4 py-3 text-left transition-colors",
+                      partner.settled
+                        ? "border-emerald-500/50 bg-emerald-500/10"
+                        : "border-border bg-card hover:border-primary/30"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-sm">{partner.label}</span>
+                      <Badge variant={partner.settled ? "default" : "secondary"} className="text-[10px]">
+                        {partner.settled ? "Quitado" : "Pendente"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Cota: {formatCurrency(partner.share)} · Pendente: {formatCurrency(partner.pending)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Data de vencimento</Label>
                 <Input
@@ -532,10 +597,6 @@ export function ExpenseFormPage({
                   value={form.dueDate ?? ""}
                   onChange={(e) => set("dueDate", e.target.value)}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label>Pago por</Label>
-                <Input disabled={!hasCost} value={form.paidBy} onChange={(e) => set("paidBy", e.target.value)} />
               </div>
             </div>
           </CardContent>

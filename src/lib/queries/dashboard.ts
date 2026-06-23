@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { activities, expenses, scheduleItems, clients, projects } from "@/lib/db/schema";
+import { activities, expenses, revenues, scheduleItems, clients, projects } from "@/lib/db/schema";
 import type { Expense, ScheduleItem } from "@/lib/db/schema";
 
 function sumValues(items: { totalValue?: string | null }[]) {
@@ -152,5 +152,31 @@ export async function getFinancialSummary() {
       elainePending: allExpenses.reduce((s, e) => s + Number(e.elainePending ?? 0), 0),
       kaykyPending: allExpenses.reduce((s, e) => s + Number(e.kaykyPending ?? 0), 0),
     },
+  };
+}
+
+export async function getProfitSummary() {
+  const [{ totals }, allRevenues] = await Promise.all([
+    getFinancialSummary(),
+    db.select().from(revenues),
+  ]);
+
+  const received = allRevenues
+    .filter((r) => r.status === "Recebido")
+    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+
+  const pending = allRevenues
+    .filter((r) => r.status === "Pendente")
+    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+
+  const costs = totals.invested;
+  const profit = received - costs;
+
+  return {
+    received,
+    pending,
+    costs,
+    profit,
+    revenues: allRevenues,
   };
 }

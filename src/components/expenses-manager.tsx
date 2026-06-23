@@ -33,12 +33,12 @@ type ExpenseRow = {
   dueDate: Date | null;
   totalValue: string | null;
   status: string | null;
+  paidBy: string | null;
   paymentType: string | null;
   paymentCard: string | null;
   hasCost: boolean | null;
   projectName: string;
   clientName: string;
-  scheduleTitle: string;
 };
 
 export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
@@ -94,8 +94,6 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Descrição</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Cronograma</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Centro de custo</TableHead>
               <TableHead>Pagamento</TableHead>
@@ -104,6 +102,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
               <TableHead>Vencimento</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Pago por</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -127,7 +126,6 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
                     </Link>
                   </TableCell>
                   <TableCell><Badge variant="outline">{item.expenseType ?? "Único"}</Badge></TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{item.scheduleTitle !== "—" ? item.scheduleTitle : "—"}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {item.contractedPlan || item.planVariant || "—"}
                     {item.hasCost === false && (
@@ -174,6 +172,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
                   <TableCell>
                     <Badge variant={item.status === "Pago" ? "default" : "secondary"}>{item.status}</Badge>
                   </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{item.paidBy || "—"}</TableCell>
                   <TableCell className="text-right">
                     <Button size="icon" variant="ghost" disabled={pending} onClick={(e) => handleDelete(item.id, e)}>
                       <Trash2 className="h-4 w-4 text-destructive" />

@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoneyStat } from "@/components/stat-card";
 import { PageHeader } from "@/components/page-header";
-import { getFinancialSummary } from "@/lib/queries/dashboard";
+import { getFinancialSummary, getProfitSummary } from "@/lib/queries/dashboard";
+import { getVendorTotalsForFinanceiro } from "@/lib/actions/vendors";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
-import { PieChart, Pencil, Wallet, Users } from "lucide-react";
+import { PieChart, Pencil, Wallet, Users, TrendingUp, Truck, ArrowRight } from "lucide-react";
 import { FinancialCharts } from "@/components/financial-charts";
 import {
   Table,
@@ -15,9 +16,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function FinanceiroPage() {
-  const { expenses, monthlyData, totals } = await getFinancialSummary();
+  const [{ expenses, monthlyData, totals }, profit, vendorTotals] = await Promise.all([
+    getFinancialSummary(),
+    getProfitSummary(),
+    getVendorTotalsForFinanceiro(),
+  ]);
 
   const byCategory = expenses.reduce<Record<string, number>>((acc, e) => {
     const cat = e.category || "Outros";
@@ -37,7 +43,41 @@ export default async function FinanceiroPage() {
 
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-          Totais
+          Resultado (Lucro)
+        </h2>
+        <Card className="kn-card mb-6 border-primary/20">
+          <CardContent className="p-6">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Receita recebida</p>
+                <p className="text-xl font-bold tabular-nums text-emerald-600 mt-1">{formatCurrency(profit.received)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Custos (gastos)</p>
+                <p className="text-xl font-bold tabular-nums mt-1">{formatCurrency(profit.costs)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Lucro</p>
+                <p className={`text-xl font-bold tabular-nums mt-1 ${profit.profit >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                  {formatCurrency(profit.profit)}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-border/50">
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link href="/lucro"><TrendingUp className="h-4 w-4" /> Gerenciar receitas</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link href="/fornecedores"><Truck className="h-4 w-4" /> Fornecedores</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+          Totais de custos
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MoneyStat title="Total investido" amount={totals.invested} icon={Wallet} />
@@ -48,6 +88,37 @@ export default async function FinanceiroPage() {
       </section>
 
       <FinancialCharts monthlyData={monthlyData} categoryData={categoryData} />
+
+      {vendorTotals.length > 0 && (
+        <Card className="kn-card">
+          <CardHeader className="kn-card-header py-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-semibold">Gastos por fornecedor</CardTitle>
+            <Link href="/fornecedores" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              Ver todos <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fornecedor</TableHead>
+                  <TableHead>Lançamentos</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {vendorTotals.slice(0, 8).map((v) => (
+                  <TableRow key={v.name}>
+                    <TableCell className="font-medium">{v.name}</TableCell>
+                    <TableCell>{v.count}</TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">{formatCurrency(v.total)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="kn-card">
         <CardHeader className="kn-card-header py-4">
