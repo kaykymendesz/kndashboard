@@ -132,6 +132,19 @@ function toForm(expense: Expense, planChanges: ExpensePlanChange[]): ExpenseInpu
 
 const emptyDraft: PlanChangeInput = { planName: "", planValue: "", changeDate: "", notes: "" };
 
+function collectPlanChangesForSave(form: ExpenseInput, draft: PlanChangeInput): PlanChangeInput[] {
+  const list = [...(form.planChanges ?? [])];
+  if (draft.planName.trim()) {
+    list.push({
+      planName: draft.planName.trim(),
+      planValue: draft.planValue,
+      changeDate: draft.changeDate,
+      notes: draft.notes,
+    });
+  }
+  return list;
+}
+
 export function ExpenseFormPage({
   expense,
   projects,
@@ -176,7 +189,7 @@ export function ExpenseFormPage({
     const change = { ...draftChange, planName: draftChange.planName.trim() };
     setForm((f) => applyPlanChangeToForm(f, change));
     setDraftChange(emptyDraft);
-    toast.success("Alteração incluída — valores de rateio atualizados.");
+    toast.success("Alteração incluída — clique em Salvar gasto para gravar.");
   };
 
   const removePlanChange = (index: number) => {
@@ -191,20 +204,24 @@ export function ExpenseFormPage({
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const planChangesToSave = collectPlanChangesForSave(form, draftChange);
     startTransition(async () => {
       try {
         if (expense) {
-          await updateExpense(expense.id, form);
+          const savedChanges = await updateExpense(expense.id, form, planChangesToSave);
+          setForm((f) => ({ ...f, planChanges: toPlanChanges(savedChanges) }));
+          setDraftChange(emptyDraft);
           toast.success("Gasto atualizado");
         } else {
-          const row = await createExpense(form);
+          const row = await createExpense(form, planChangesToSave);
           toast.success("Gasto criado");
           router.push(`/gastos/${row.id}`);
           return;
         }
         router.refresh();
-      } catch {
-        toast.error("Erro ao salvar");
+      } catch (err) {
+        console.error(err);
+        toast.error("Erro ao salvar — verifique alterações de plano e tente novamente");
       }
     });
   };

@@ -5,6 +5,7 @@ import { expenses, expensePlanChanges, scheduleItems } from "@/lib/db/schema";
 import { parseDate, parseNumber } from "@/lib/format";
 import { getEffectivePlanValue, splitPartnerShares } from "@/lib/expense-rateio";
 import type { ExpenseInput } from "@/lib/expense-input";
+import type { PlanChangeInput } from "@/lib/expense-rateio";
 import { statusFromSettlement } from "@/lib/expense-settlement";
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -146,19 +147,26 @@ function revalidateExpensePaths(id?: number) {
   if (id) revalidatePath(`/gastos/${id}`);
 }
 
-export async function createExpense(input: ExpenseInput) {
-  const [row] = await db.insert(expenses).values(mapExpenseInput(input)).returning();
-  await savePlanChanges(row.id, input);
-  await syncScheduleFromExpense(input);
+export async function createExpense(input: ExpenseInput, planChanges: PlanChangeInput[] = []) {
+  const mergedInput = { ...input, planChanges };
+  const [row] = await db.insert(expenses).values(mapExpenseInput(mergedInput)).returning();
+  await savePlanChanges(row.id, mergedInput);
+  await syncScheduleFromExpense(mergedInput);
   revalidateExpensePaths(row.id);
   return row;
 }
 
-export async function updateExpense(id: number, input: ExpenseInput) {
-  await db.update(expenses).set(mapExpenseInput(input)).where(eq(expenses.id, id));
-  await savePlanChanges(id, input);
-  await syncScheduleFromExpense(input);
+export async function updateExpense(
+  id: number,
+  input: ExpenseInput,
+  planChanges: PlanChangeInput[] = []
+) {
+  const mergedInput = { ...input, planChanges };
+  await db.update(expenses).set(mapExpenseInput(mergedInput)).where(eq(expenses.id, id));
+  await savePlanChanges(id, mergedInput);
+  await syncScheduleFromExpense(mergedInput);
   revalidateExpensePaths(id);
+  return getPlanChangesByExpenseId(id);
 }
 
 export async function deleteExpense(id: number) {
