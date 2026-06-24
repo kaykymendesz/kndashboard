@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 
-const COLORS = ["#1e3a5f", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8"];
+const COLORS = ["#7c3aed", "#6366f1", "#4f46e5", "#3b82f6", "#0ea5e9", "#06b6d4"];
 
 type Props = {
   monthlyData: { month: string; total: number }[];
@@ -39,7 +39,7 @@ export function FinancialCharts({ monthlyData, categoryData }: Props) {
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(v) => formatCurrency(Number(v))} />
-                <Bar dataKey="total" fill="#1e3a5f" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" fill="#7c3aed" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

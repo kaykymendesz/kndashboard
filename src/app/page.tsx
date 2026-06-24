@@ -5,7 +5,7 @@ import { COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export default function PortalPage() {
   return (
-    <div className="min-h-svh flex flex-col bg-[oklch(0.22_0.06_250)] text-white relative overflow-hidden">
+    <div className="min-h-svh flex flex-col kn-brand-hero relative overflow-hidden">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
 
       <header className="relative z-10 px-6 py-8 md:px-12 max-md:pt-[max(2rem,env(safe-area-inset-top))]">
@@ -31,7 +31,7 @@ export default function PortalPage() {
         <div className="grid gap-5 w-full max-w-3xl md:grid-cols-2">
           <Link
             href="/login?callbackUrl=/gestao"
-            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
+            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[oklch(0.68_0.16_235/0.45)] hover:shadow-2xl hover:shadow-[oklch(0.48_0.2_285/0.25)] hover:-translate-y-1"
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
               <LayoutDashboard className="h-7 w-7" />
@@ -47,7 +47,7 @@ export default function PortalPage() {
 
           <Link
             href="/login?callbackUrl=/atendimento"
-            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
+            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[oklch(0.68_0.16_235/0.45)] hover:shadow-2xl hover:shadow-[oklch(0.48_0.2_285/0.25)] hover:-translate-y-1"
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
               <Headphones className="h-7 w-7" />

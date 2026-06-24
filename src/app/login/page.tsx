@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-svh flex">
       {/* Painel esquerdo — branding corporativo */}
-      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] relative flex-col justify-between bg-[oklch(0.22_0.06_250)] p-12 text-white overflow-hidden">
+      <div className="hidden lg:flex lg:w-[48%] xl:w-[52%] relative flex-col justify-between kn-brand-hero p-12 text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
         <div className="relative">
           <KnLogo

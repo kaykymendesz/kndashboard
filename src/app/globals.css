@@ -41,6 +41,9 @@
   --color-card: var(--card);
   --color-navy: var(--navy);
   --color-navy-light: var(--navy-light);
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-cyan: var(--brand-cyan);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -51,40 +54,71 @@
 }
 
 :root {
-  --navy: oklch(0.28 0.07 250);
-  --navy-light: oklch(0.38 0.09 250);
-  --background: oklch(0.975 0.008 250);
-  --foreground: oklch(0.22 0.04 250);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 250);
-  --primary: oklch(0.32 0.09 250);
+  /* K&N brand — roxo → índigo → ciano (logo) */
+  --brand-purple: oklch(0.48 0.22 295);
+  --brand-indigo: oklch(0.46 0.18 270);
+  --brand-blue: oklch(0.52 0.16 255);
+  --brand-cyan: oklch(0.62 0.14 235);
+  --navy: oklch(0.22 0.1 285);
+  --navy-light: oklch(0.32 0.12 275);
+
+  --kn-brand-gradient: linear-gradient(
+    135deg,
+    oklch(0.52 0.22 295) 0%,
+    oklch(0.48 0.18 270) 48%,
+    oklch(0.58 0.15 235) 100%
+  );
+  --kn-brand-gradient-soft: linear-gradient(
+    135deg,
+    oklch(0.97 0.025 295) 0%,
+    oklch(0.98 0.015 265) 50%,
+    oklch(0.98 0.02 235) 100%
+  );
+  --kn-sidebar-gradient: linear-gradient(
+    180deg,
+    oklch(0.17 0.1 295) 0%,
+    oklch(0.19 0.11 275) 42%,
+    oklch(0.21 0.09 250) 100%
+  );
+  --kn-hero-gradient: linear-gradient(
+    145deg,
+    oklch(0.16 0.1 295) 0%,
+    oklch(0.2 0.11 275) 40%,
+    oklch(0.22 0.09 245) 100%
+  );
+
+  --background: oklch(0.985 0.012 285);
+  --foreground: oklch(0.22 0.04 285);
+  --card: oklch(1 0.002 285);
+  --card-foreground: oklch(0.22 0.04 285);
+  --popover: oklch(1 0.002 285);
+  --popover-foreground: oklch(0.22 0.04 285);
+  --primary: oklch(0.48 0.2 285);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.94 0.015 250);
-  --secondary-foreground: oklch(0.28 0.06 250);
-  --muted: oklch(0.96 0.01 250);
-  --muted-foreground: oklch(0.48 0.03 250);
-  --accent: oklch(0.93 0.02 250);
-  --accent-foreground: oklch(0.28 0.06 250);
+  --secondary: oklch(0.955 0.02 285);
+  --secondary-foreground: oklch(0.28 0.08 285);
+  --muted: oklch(0.965 0.015 285);
+  --muted-foreground: oklch(0.46 0.04 285);
+  --accent: oklch(0.94 0.03 275);
+  --accent-foreground: oklch(0.28 0.1 285);
   --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.9 0.015 250);
-  --input: oklch(0.92 0.015 250);
-  --ring: oklch(0.42 0.1 250);
-  --chart-1: oklch(0.42 0.12 250);
-  --chart-2: oklch(0.52 0.14 245);
-  --chart-3: oklch(0.62 0.12 240);
-  --chart-4: oklch(0.72 0.08 235);
-  --chart-5: oklch(0.82 0.05 230);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.22 0.06 250);
-  --sidebar-foreground: oklch(0.92 0.02 250);
-  --sidebar-primary: oklch(0.55 0.14 245);
+  --border: oklch(0.91 0.02 285);
+  --input: oklch(0.93 0.018 285);
+  --ring: oklch(0.52 0.18 280);
+  --chart-1: oklch(0.48 0.2 295);
+  --chart-2: oklch(0.52 0.17 275);
+  --chart-3: oklch(0.56 0.14 255);
+  --chart-4: oklch(0.62 0.12 240);
+  --chart-5: oklch(0.68 0.1 230);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.18 0.1 290);
+  --sidebar-foreground: oklch(0.94 0.02 285);
+  --sidebar-primary: oklch(0.58 0.16 235);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.28 0.07 250);
+  --sidebar-accent: oklch(0.26 0.12 285);
   --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.32 0.06 250);
-  --sidebar-ring: oklch(0.55 0.14 245);
+  --sidebar-border: oklch(0.32 0.08 285);
+  --sidebar-ring: oklch(0.58 0.16 235);
 }
 
 @layer base {
@@ -93,6 +127,10 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 100% -20%, oklch(0.62 0.12 235 / 0.06), transparent 50%),
+      radial-gradient(ellipse 80% 60% at 0% 0%, oklch(0.52 0.18 295 / 0.05), transparent 45%);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans scroll-smooth;
@@ -103,35 +141,69 @@
 }
 
 @layer components {
+  .kn-brand-hero {
+    background: var(--kn-hero-gradient);
+    color: white;
+  }
+
+  .kn-brand-gradient-text {
+    background: var(--kn-brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
   .kn-page {
     @apply space-y-8 animate-in fade-in duration-500;
   }
 
   .kn-card {
-    @apply rounded-xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md;
+    @apply rounded-xl border border-border/50 bg-card shadow-sm transition-all duration-200;
+    box-shadow:
+      0 1px 2px oklch(0.28 0.06 285 / 0.04),
+      0 4px 16px oklch(0.48 0.12 285 / 0.04);
+  }
+
+  .kn-card:hover {
+    box-shadow:
+      0 1px 2px oklch(0.28 0.06 285 / 0.06),
+      0 8px 24px oklch(0.48 0.12 285 / 0.08);
   }
 
   .kn-card-header {
-    @apply border-b border-border/50 bg-muted/30 px-6 py-4;
+    background: var(--kn-brand-gradient-soft);
+    @apply border-b border-border/40 px-6 py-4;
   }
 
   .kn-table-wrap {
-    @apply overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm;
+    @apply overflow-hidden rounded-xl border border-border/50 bg-card;
+    box-shadow: 0 1px 3px oklch(0.28 0.06 285 / 0.05);
   }
 
   .kn-row-hover {
-    @apply transition-colors hover:bg-muted/40;
+    @apply transition-colors hover:bg-accent/50;
   }
 
   .kn-btn-primary {
-    @apply bg-primary text-primary-foreground shadow-md shadow-primary/20
-      hover:bg-[oklch(0.28_0.09_250)] hover:shadow-lg hover:shadow-primary/25
+    background: var(--kn-brand-gradient);
+    @apply text-white border-0 shadow-md
+      hover:brightness-110 hover:shadow-lg
       active:scale-[0.98] transition-all duration-200;
+    box-shadow: 0 4px 14px oklch(0.48 0.2 285 / 0.35);
+  }
+
+  .kn-btn-primary:hover {
+    box-shadow: 0 6px 20px oklch(0.48 0.2 285 / 0.45);
   }
 
   .kn-input {
-    @apply h-10 rounded-lg border-border/80 bg-white shadow-sm
-      focus-visible:border-primary focus-visible:ring-primary/20;
+    @apply h-10 rounded-lg border-border/70 bg-white shadow-sm
+      focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20;
+  }
+
+  .kn-sidebar-shell {
+    background: var(--kn-sidebar-gradient);
+    border-right: 1px solid oklch(0.35 0.08 285 / 0.5);
   }
 
   .kn-sidebar-item {
@@ -139,46 +211,69 @@
   }
 
   .kn-sidebar-item-active {
-    @apply bg-sidebar-accent text-white shadow-md shadow-black/20;
+    @apply text-white font-medium;
+    background: linear-gradient(
+      90deg,
+      oklch(0.38 0.16 295 / 0.95) 0%,
+      oklch(0.4 0.14 265 / 0.85) 55%,
+      oklch(0.42 0.12 240 / 0.75) 100%
+    );
+    box-shadow:
+      inset 3px 0 0 oklch(0.68 0.16 235),
+      0 4px 12px oklch(0.15 0.08 285 / 0.35);
   }
 
   .kn-sidebar-scroll {
     scrollbar-width: thin;
-    scrollbar-color: oklch(0.45 0.06 250 / 0.8) transparent;
+    scrollbar-color: oklch(0.45 0.1 285 / 0.6) transparent;
   }
 
   .kn-sidebar-scroll::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   .kn-sidebar-scroll::-webkit-scrollbar-track {
-    background: oklch(0.2 0.05 250 / 0.4);
-    border-radius: 9999px;
-    margin: 4px 0;
+    background: transparent;
   }
 
   .kn-sidebar-scroll::-webkit-scrollbar-thumb {
-    background: oklch(0.45 0.06 250 / 0.85);
+    background: oklch(0.45 0.1 285 / 0.5);
     border-radius: 9999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
   }
 
   .kn-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.55 0.08 250 / 0.95);
-    background-clip: padding-box;
+    background: oklch(0.55 0.14 275 / 0.7);
   }
 
   .kn-kpi-icon {
-    @apply flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary;
+    background: var(--kn-brand-gradient-soft);
+    @apply flex h-10 w-10 items-center justify-center rounded-xl text-primary ring-1 ring-primary/15;
   }
 
   .kn-partner-card {
-    @apply rounded-xl border border-border/60 bg-gradient-to-br from-white to-muted/30 p-5 shadow-sm;
+    @apply rounded-xl border border-border/50 p-5;
+    background: linear-gradient(
+      145deg,
+      oklch(1 0.002 285) 0%,
+      oklch(0.97 0.02 285) 100%
+    );
+    box-shadow: 0 2px 8px oklch(0.48 0.12 285 / 0.06);
+  }
+
+  .kn-shell-header {
+    @apply sticky top-0 z-10 flex h-14 md:h-16 items-center justify-between gap-3 px-4 md:px-6;
+    background: oklch(1 0.002 285 / 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid oklch(0.88 0.025 285 / 0.8);
+    box-shadow: 0 1px 0 oklch(0.62 0.14 235 / 0.08);
+  }
+
+  .kn-brand-badge {
+    background: var(--kn-brand-gradient-soft);
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-primary ring-1 ring-primary/15;
   }
 }
 
-/* Mobile only — Android & iPhone (desktop unchanged) */
 @media (max-width: 767px) {
   html {
     -webkit-text-size-adjust: 100%;

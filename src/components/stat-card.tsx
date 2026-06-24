@@ -13,7 +13,7 @@ type StatCardProps = {
 
 const accentStyles = {
   default: {
-    icon: "bg-primary/10 text-primary",
+    icon: "bg-gradient-to-br from-[oklch(0.94_0.04_295)] to-[oklch(0.94_0.03_235)] text-primary ring-1 ring-primary/20",
     value: "text-foreground",
   },
   warning: {

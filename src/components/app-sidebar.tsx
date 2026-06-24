@@ -83,7 +83,7 @@ export function AppSidebar({
   }, {});
 
   return (
-    <Sidebar className="border-r-0">
+    <Sidebar className="border-r-0 kn-sidebar-shell">
       <SidebarHeader className="border-b border-sidebar-border/50 px-5 py-5">
         <KnLogo
           size={44}
@@ -191,7 +191,7 @@ export function DashboardShell({
     <SidebarProvider>
       <AppSidebar userName={userName} menuItems={menuItems} shell={shell} />
       <main className="flex min-h-svh flex-1 flex-col bg-background max-md:min-h-dvh">
-        <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center justify-between gap-3 border-b border-border/60 bg-white/80 backdrop-blur-md px-4 md:px-6 shadow-sm max-md:pt-[env(safe-area-inset-top)]">
+        <header className="kn-shell-header max-md:pt-[env(safe-area-inset-top)]">
           <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0" />
             <Separator orientation="vertical" className="h-5 hidden sm:block" />
@@ -207,7 +207,7 @@ export function DashboardShell({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="hidden md:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <span className="hidden md:inline-flex kn-brand-badge">
               {headerBadge}
             </span>
           </div>
