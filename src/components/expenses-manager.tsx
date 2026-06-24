@@ -94,6 +94,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Descrição</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Centro de custo</TableHead>
               <TableHead>Pagamento</TableHead>
