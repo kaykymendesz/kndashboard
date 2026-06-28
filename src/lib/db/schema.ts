@@ -294,6 +294,22 @@ export type Quotation = typeof quotations.$inferSelect;
 export type AttendanceCase = typeof attendanceCases.$inferSelect;
 export type AttendanceStep = typeof attendanceSteps.$inferSelect;
 
+/** Histórico de verificações do Painel Operacional */
+export const monitorCheckLogs = pgTable("monitor_check_logs", {
+  id: serial("id").primaryKey(),
+  serviceId: varchar("service_id", { length: 80 }).notNull(),
+  status: varchar("status", { length: 30 }).notNull(),
+  responseTimeMs: integer("response_time_ms"),
+  httpStatus: integer("http_status"),
+  errorMessage: text("error_message"),
+  plainSummary: text("plain_summary").notNull().default(""),
+  technicalDetail: text("technical_detail"),
+  suggestedSteps: text("suggested_steps").default("[]"),
+  checkedAt: timestamp("checked_at").defaultNow().notNull(),
+});
+
+export type MonitorCheckLog = typeof monitorCheckLogs.$inferSelect;
+
 export const appUsers = pgTable("app_users", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 200 }).notNull().unique(),

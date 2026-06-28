@@ -1,9 +1,17 @@
-import { DashboardShell, type NavItem } from "@/components/app-sidebar";
+import { DashboardShell, type NavItem, type ShellConfig } from "@/components/app-sidebar";
 import { auth } from "@/lib/auth";
 import { getMenuItems } from "@/lib/actions/settings";
 import { DEFAULT_MENUS } from "@/lib/constants";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
+
+function shellForPath(pathname: string): ShellConfig | undefined {
+  if (pathname.startsWith("/operacional")) {
+    return { subtitle: "Painel Operacional", headerBadge: "Status dos Serviços" };
+  }
+  return undefined;
+}
 
 export default async function DashboardLayout({
   children,
@@ -11,6 +19,8 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const shell = shellForPath(pathname);
   let menuItems: NavItem[] = [];
 
   try {
@@ -37,7 +47,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardShell userName={session?.user?.name} menuItems={menuItems}>
+    <DashboardShell userName={session?.user?.name} menuItems={menuItems} shell={shell}>
       {session?.user?.name && (
         <div className="sr-only">Logado como {session.user.name}</div>
       )}

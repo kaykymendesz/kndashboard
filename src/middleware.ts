@@ -4,7 +4,10 @@ import { NextResponse } from "next/server";
 const PUBLIC_PATHS = ["/", "/login"];
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.includes(pathname);
+  if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (pathname === "/api/health") return true;
+  if (pathname.startsWith("/api/cron/")) return true;
+  return false;
 }
 
 export default auth((req) => {
@@ -27,7 +30,9 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(target, req.url));
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", pathname);
+  return response;
 });
 
 export const config = {

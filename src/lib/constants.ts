@@ -12,6 +12,7 @@ import {
   Headphones,
   Truck,
   TrendingUp,
+  Activity,
 } from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
@@ -27,6 +28,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Headphones,
   Truck,
   TrendingUp,
+  Activity,
 };
 
 export const ICON_OPTIONS = Object.keys(ICON_MAP);
@@ -62,7 +64,8 @@ export const DEFAULT_MENUS = [
   { label: "Clientes", href: "/clientes", icon: "Users", groupLabel: "Navegação", sortOrder: 9 },
   { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 10 },
   { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 11 },
-  { label: "Atendimento a Clientes", href: "/atendimento", icon: "Headphones", groupLabel: "Atendimento", sortOrder: 12 },
+  { label: "Painel Operacional", href: "/operacional", icon: "Activity", groupLabel: "Sistema", sortOrder: 12 },
+  { label: "Atendimento a Clientes", href: "/atendimento", icon: "Headphones", groupLabel: "Atendimento", sortOrder: 13 },
 ] as const;
 
 export const DEFAULT_ATENDIMENTO_MENUS = [
