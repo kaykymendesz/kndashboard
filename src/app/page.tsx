@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { KnLogo } from "@/components/kn-logo";
-import { Building2, Headphones, LayoutDashboard, ArrowRight, Activity } from "lucide-react";
+import { Building2, LayoutDashboard, ArrowRight, Activity } from "lucide-react";
 import { COMPANY_LEGAL_NAME } from "@/lib/constants";
 
 export default function PortalPage() {
@@ -24,11 +24,11 @@ export default function PortalPage() {
             Escolha como deseja acessar
           </h1>
           <p className="mt-4 text-white/70 text-base md:text-lg leading-relaxed">
-            Selecione o módulo do sistema K&N. Gestão interna e atendimento a clientes compartilham a mesma plataforma.
+            Selecione o módulo do sistema K&N. Clientes, projetos e finanças compartilham a mesma plataforma.
           </p>
         </div>
 
-        <div className="grid gap-5 w-full max-w-4xl md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 w-full max-w-3xl md:grid-cols-2">
           <Link
             href="/login?callbackUrl=/gestao"
             className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[oklch(0.68_0.16_235/0.45)] hover:shadow-2xl hover:shadow-[oklch(0.48_0.2_285/0.25)] hover:-translate-y-1"
@@ -36,9 +36,9 @@ export default function PortalPage() {
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
               <LayoutDashboard className="h-7 w-7" />
             </div>
-            <h2 className="text-xl font-bold mb-2">Gestão K&N e Projetos</h2>
+            <h2 className="text-xl font-bold mb-2">Gestão K&N</h2>
             <p className="text-sm text-white/65 leading-relaxed flex-1">
-              Painel administrativo — finanças, gastos, cronograma, projetos Wikinaya e configurações da empresa.
+              Finanças, gastos, clientes, projetos, cronograma e configurações — tudo em um único fluxo.
             </p>
             <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/90 group-hover:gap-3 transition-all">
               Entrar na gestão <ArrowRight className="h-4 w-4" />
@@ -46,24 +46,8 @@ export default function PortalPage() {
           </Link>
 
           <Link
-            href="/login?callbackUrl=/atendimento"
-            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[oklch(0.68_0.16_235/0.45)] hover:shadow-2xl hover:shadow-[oklch(0.48_0.2_285/0.25)] hover:-translate-y-1"
-          >
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
-              <Headphones className="h-7 w-7" />
-            </div>
-            <h2 className="text-xl font-bold mb-2">Clientes e Atendimento</h2>
-            <p className="text-sm text-white/65 leading-relaxed flex-1">
-              Mesmo sistema K&N — demandas, cotações e etapas por cliente até finalizar (ex: Zuki).
-            </p>
-            <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/90 group-hover:gap-3 transition-all">
-              Ir para atendimento <ArrowRight className="h-4 w-4" />
-            </span>
-          </Link>
-
-          <Link
             href="/login?callbackUrl=/operacional"
-            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[oklch(0.68_0.16_235/0.45)] hover:shadow-2xl hover:shadow-[oklch(0.48_0.2_285/0.25)] hover:-translate-y-1 md:col-span-2 lg:col-span-1"
+            className="group relative flex flex-col rounded-2xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[oklch(0.68_0.16_235/0.45)] hover:shadow-2xl hover:shadow-[oklch(0.48_0.2_285/0.25)] hover:-translate-y-1"
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 mb-6 group-hover:bg-primary/30 transition-colors">
               <Activity className="h-7 w-7" />

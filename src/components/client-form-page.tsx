@@ -74,7 +74,7 @@ export function ClientFormPage({ client, returnTo }: Props) {
         if (isEdit) {
           await updateClient(client.id, form);
           toast.success("Cliente atualizado");
-          router.push(returnTo ?? `/atendimento/clientes/${client.slug}`);
+          router.push(returnTo ?? `/clientes/${client.slug}`);
           router.refresh();
         } else {
           await createClient(form);
@@ -132,19 +132,13 @@ export function ClientFormPage({ client, returnTo }: Props) {
                 <Input value={form.company} onChange={(e) => set("company", e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <Label>Projeto</Label>
-                <Input value={form.project} onChange={(e) => set("project", e.target.value)} />
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>E-mail</Label>
-                <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
-              </div>
-              <div className="grid gap-2">
                 <Label>Telefone</Label>
                 <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
               </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>E-mail</Label>
+              <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -179,7 +173,7 @@ export function ClientFormPage({ client, returnTo }: Props) {
               </Button>
               {isEdit && client.slug && (
                 <Button type="button" variant="outline" asChild>
-                  <Link href={`/atendimento/clientes/${client.slug}`}>Ver atendimento</Link>
+                  <Link href={`/clientes/${client.slug}`}>Ver projetos</Link>
                 </Button>
               )}
               {isEdit && (
@@ -198,7 +192,7 @@ export function ClientFormPage({ client, returnTo }: Props) {
                     title="Excluir cliente?"
                     description={
                       <>
-                        {client.name} será removido permanentemente. Demandas e cotações vinculadas também serão excluídas.
+                        {client.name} será removido permanentemente. Projetos e dados vinculados também serão excluídos.
                       </>
                     }
                     confirmLabel="Excluir"

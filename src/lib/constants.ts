@@ -65,7 +65,6 @@ export const DEFAULT_MENUS = [
   { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 10 },
   { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 11 },
   { label: "Painel Operacional", href: "/operacional", icon: "Activity", groupLabel: "Sistema", sortOrder: 12 },
-  { label: "Atendimento a Clientes", href: "/atendimento", icon: "Headphones", groupLabel: "Atendimento", sortOrder: 13 },
 ] as const;
 
 export const DEFAULT_ATENDIMENTO_MENUS = [
@@ -90,4 +89,12 @@ export const DEFAULT_CLASSIFICATIONS = [
   { type: "schedule_status", name: "Concluído", color: "#16a34a", sortOrder: 5 },
   { type: "process_category", name: "Análise", color: "#2563eb", sortOrder: 1 },
   { type: "process_category", name: "Execução", color: "#3b82f6", sortOrder: 2 },
+  { type: "project_status", name: "Prospecção", color: "#6366f1", sortOrder: 1 },
+  { type: "project_status", name: "Levantamento", color: "#8b5cf6", sortOrder: 2 },
+  { type: "project_status", name: "Cotação", color: "#a855f7", sortOrder: 3 },
+  { type: "project_status", name: "Em desenvolvimento", color: "#2563eb", sortOrder: 4 },
+  { type: "project_status", name: "Homologação", color: "#0ea5e9", sortOrder: 5 },
+  { type: "project_status", name: "Implantação", color: "#14b8a6", sortOrder: 6 },
+  { type: "project_status", name: "Concluído", color: "#16a34a", sortOrder: 7 },
+  { type: "project_status", name: "Cancelado", color: "#64748b", sortOrder: 8 },
 ] as const;

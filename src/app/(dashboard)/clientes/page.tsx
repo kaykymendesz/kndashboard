@@ -1,7 +1,7 @@
 import { ClientsManager } from "@/components/clients-manager";
-import { getClients } from "@/lib/actions/clients";
+import { getClientsWithSummary } from "@/lib/actions/clients";
 
 export default async function ClientesPage() {
-  const items = await getClients();
+  const items = await getClientsWithSummary();
   return <ClientsManager items={items} />;
 }

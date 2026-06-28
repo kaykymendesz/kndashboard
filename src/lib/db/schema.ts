@@ -395,9 +395,44 @@ export const SUBSCRIPTION_RECURRENCES = [
 ] as const;
 export type SubscriptionRecurrence = (typeof SUBSCRIPTION_RECURRENCES)[number];
 
+export const PROJECT_LIFECYCLE_STATUSES = [
+  "Prospecção",
+  "Levantamento",
+  "Cotação",
+  "Em desenvolvimento",
+  "Homologação",
+  "Implantação",
+  "Concluído",
+  "Cancelado",
+] as const;
+export type ProjectLifecycleStatus = (typeof PROJECT_LIFECYCLE_STATUSES)[number];
+
+export const DEFAULT_CLIENT_PROJECT_STATUS: ProjectLifecycleStatus = "Prospecção";
+export const DEFAULT_INTERNAL_PROJECT_STATUS = "Ativo";
+
 export function isArchivedProject(project: { projectType?: string | null; status?: string | null }) {
   return (
     project.projectType === "arquivado" ||
     (project.status?.toLowerCase().includes("arquiv") ?? false)
   );
+}
+
+export function isClosedProject(status?: string | null) {
+  return status === "Concluído" || status === "Cancelado";
+}
+
+export function canAcceptNewExpenses(project: {
+  projectType?: string | null;
+  status?: string | null;
+}) {
+  if (isArchivedProject(project)) return false;
+  if (isClosedProject(project.status)) return false;
+  return true;
+}
+
+export function lifecycleStatusVariant(status?: string | null): "default" | "secondary" | "destructive" | "outline" {
+  if (status === "Cancelado") return "destructive";
+  if (status === "Concluído") return "default";
+  if (status === "Cotação" || status === "Prospecção" || status === "Levantamento") return "outline";
+  return "secondary";
 }

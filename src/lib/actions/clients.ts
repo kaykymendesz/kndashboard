@@ -50,7 +50,6 @@ export async function createClient(input: ClientInput) {
   await db.insert(clients).values(mapClientInput(input, slug));
   revalidatePath("/clientes");
   revalidatePath("/gestao");
-  revalidatePath("/atendimento");
 }
 
 export async function updateClient(id: number, input: ClientInput) {
@@ -58,19 +57,37 @@ export async function updateClient(id: number, input: ClientInput) {
   await db.update(clients).set(mapClientInput(input, slug)).where(eq(clients.id, id));
   revalidatePath("/clientes");
   revalidatePath("/gestao");
-  revalidatePath("/atendimento");
-  revalidatePath(`/atendimento/clientes/${slug}`);
+  revalidatePath(`/clientes/${slug}`);
 }
 
 export async function deleteClient(id: number) {
   await db.delete(clients).where(eq(clients.id, id));
   revalidatePath("/clientes");
   revalidatePath("/gestao");
-  revalidatePath("/atendimento");
 }
 
 export async function getClients() {
   return db.query.clients.findMany({ orderBy: (c, { desc }) => [desc(c.createdAt)] });
+}
+
+export async function getClientsWithSummary() {
+  const [allClients, allProjects] = await Promise.all([
+    getClients(),
+    db.query.projects.findMany(),
+  ]);
+
+  return allClients.map((client) => {
+    const clientProjects = allProjects.filter(
+      (p) => p.clientId === client.id && p.projectType === "cliente"
+    );
+    return {
+      ...client,
+      projectCount: clientProjects.length,
+      activeProjects: clientProjects.filter(
+        (p) => p.status !== "Concluído" && p.status !== "Cancelado"
+      ).length,
+    };
+  });
 }
 
 export async function getClientBySlug(slug: string) {

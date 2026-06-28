@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getProjects } from "@/lib/actions/projects";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { isClosedProject, lifecycleStatusVariant } from "@/lib/db/schema";
 import { FolderKanban, ArrowRight, Wallet, ListTodo, Building2, TrendingUp, Archive } from "lucide-react";
 
 function projectTypeLabel(type: string | null | undefined) {
@@ -18,6 +19,8 @@ export default async function ProjetosPage() {
 
   const internal = projects.filter((p) => p.projectType !== "cliente");
   const clientProjects = projects.filter((p) => p.projectType === "cliente");
+  const activeClientProjects = clientProjects.filter((p) => !isClosedProject(p.status));
+  const closedClientProjects = clientProjects.filter((p) => isClosedProject(p.status));
 
   const renderCard = (project: (typeof projects)[number]) => {
     const isClient = project.projectType === "cliente";
@@ -41,7 +44,7 @@ export default async function ProjetosPage() {
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <Badge variant="secondary">{project.status}</Badge>
+                <Badge variant={lifecycleStatusVariant(project.status)}>{project.status}</Badge>
                 <Badge variant="outline" className="text-[10px]">
                   {isArchived ? <Archive className="h-3 w-3 mr-1 inline" /> : null}
                   {projectTypeLabel(project.projectType)}
@@ -84,10 +87,14 @@ export default async function ProjetosPage() {
                 <div className="rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <Wallet className="h-3.5 w-3.5" />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider">Investimento</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider">
+                      {isClient && isClosedProject(project.status) ? "Investimento" : "Investimento"}
+                    </span>
                   </div>
                   <p className="text-lg font-bold tabular-nums text-primary">{formatCurrency(project.totalExpenses)}</p>
-                  <p className="text-xs text-muted-foreground">acumulado</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isClient && isClosedProject(project.status) ? "realizado" : "acumulado"}
+                  </p>
                 </div>
                 <div className="rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -146,12 +153,21 @@ export default async function ProjetosPage() {
         </section>
       )}
 
-      {clientProjects.length > 0 && (
+      {activeClientProjects.length > 0 && (
         <section className="space-y-4 mt-8">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Projetos de clientes
           </h2>
-          <div className="grid gap-5 md:grid-cols-2">{clientProjects.map(renderCard)}</div>
+          <div className="grid gap-5 md:grid-cols-2">{activeClientProjects.map(renderCard)}</div>
+        </section>
+      )}
+
+      {closedClientProjects.length > 0 && (
+        <section className="space-y-4 mt-8">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Concluídos e cancelados
+          </h2>
+          <div className="grid gap-5 md:grid-cols-2">{closedClientProjects.map(renderCard)}</div>
         </section>
       )}
 

@@ -18,7 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createProject, updateProject, deleteProject, type ProjectInput } from "@/lib/actions/projects";
-import { PROJECT_TYPES, type Client, type Project } from "@/lib/db/schema";
+import {
+  PROJECT_TYPES,
+  PROJECT_LIFECYCLE_STATUSES,
+  DEFAULT_CLIENT_PROJECT_STATUS,
+  DEFAULT_INTERNAL_PROJECT_STATUS,
+  type Client,
+  type Project,
+} from "@/lib/db/schema";
 
 type Props = {
   project?: Project;
@@ -34,7 +41,7 @@ export function ProjectFormPage({ project, clients = [] }: Props) {
           name: project.name,
           slug: project.slug,
           description: project.description ?? "",
-          status: project.status ?? "Ativo",
+          status: project.status ?? (project.projectType === "cliente" ? DEFAULT_CLIENT_PROJECT_STATUS : DEFAULT_INTERNAL_PROJECT_STATUS),
           projectType: project.projectType ?? "interno",
           clientId: project.clientId ?? null,
           contractedRevenue: project.contractedRevenue ? String(project.contractedRevenue) : "",
@@ -45,7 +52,7 @@ export function ProjectFormPage({ project, clients = [] }: Props) {
           name: "",
           slug: "",
           description: "",
-          status: "Ativo",
+          status: DEFAULT_INTERNAL_PROJECT_STATUS,
           projectType: "interno",
           clientId: null,
           contractedRevenue: "",
@@ -168,8 +175,22 @@ export function ProjectFormPage({ project, clients = [] }: Props) {
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Status</Label>
-                <Input value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} />
+                <Label>{isClientProject ? "Status do projeto" : "Status"}</Label>
+                {isClientProject ? (
+                  <Select
+                    value={form.status ?? DEFAULT_CLIENT_PROJECT_STATUS}
+                    onValueChange={(v) => setForm({ ...form, status: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PROJECT_LIFECYCLE_STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} />
+                )}
               </div>
               <div className="grid gap-2">
                 <Label>Cor</Label>

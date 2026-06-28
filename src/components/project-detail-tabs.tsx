@@ -19,7 +19,8 @@ import { ProjectInfoEditor } from "@/components/project-info-editor";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { Activity, Client, Expense, Project, ProjectInfo } from "@/lib/db/schema";
 import type { ProjectFinancialSummary } from "@/lib/project-finance";
-import { FolderKanban, ArrowLeft } from "lucide-react";
+import { ProjectStatusSelect } from "@/components/project-status-select";
+import { FolderKanban, ArrowLeft, Wallet, Calendar } from "lucide-react";
 
 type Props = {
   project: Project;
@@ -65,14 +66,37 @@ export function ProjectDetailTabs({
       </div>
 
       <PageHeader title={project.name} description={project.description ?? ""} icon={FolderKanban}>
-        <div className="text-right max-md:text-left max-md:w-full">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-            {isClientProject ? "Total de despesas" : "Investimento acumulado"}
-          </p>
-          <p className="text-2xl font-bold text-primary tabular-nums max-md:text-xl">{formatCurrency(totalSpent)}</p>
-          {client && (
-            <p className="text-xs text-muted-foreground mt-1">Cliente: {client.name}</p>
+        <div className="text-right max-md:text-left max-md:w-full space-y-2">
+          {isClientProject && (
+            <div className="flex flex-col items-end max-md:items-start gap-1">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
+              <ProjectStatusSelect
+                projectId={project.id}
+                currentStatus={project.status ?? "Prospecção"}
+                isClientProject={isClientProject}
+              />
+            </div>
           )}
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+              {isClientProject ? "Total de despesas" : "Investimento acumulado"}
+            </p>
+            <p className="text-2xl font-bold text-primary tabular-nums max-md:text-xl">{formatCurrency(totalSpent)}</p>
+          </div>
+          {client && (
+            <p className="text-xs text-muted-foreground">Cliente: {client.name}</p>
+          )}
+          <div className="flex flex-wrap gap-2 justify-end max-md:justify-start pt-1">
+            <Link
+              href={`/gastos/novo?projectId=${project.id}`}
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <Wallet className="h-3 w-3" /> Novo gasto
+            </Link>
+            <Link href="/cronograma" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+              <Calendar className="h-3 w-3" /> Cronograma
+            </Link>
+          </div>
         </div>
       </PageHeader>
 

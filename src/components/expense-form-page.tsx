@@ -46,7 +46,7 @@ import {
   type ScheduleItem,
   type Vendor,
 } from "@/lib/db/schema";
-import { buildCostCenter, filterClientProjects, filterInternalProjects } from "@/lib/cost-center";
+import { buildCostCenter, filterClientProjectsForExpenses, filterInternalProjects } from "@/lib/cost-center";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +59,7 @@ type Props = {
   planChanges?: ExpensePlanChange[];
   relatedExpenses?: Expense[];
   initialScheduleId?: number | null;
+  initialProjectId?: number | null;
 };
 
 const emptyForm: ExpenseInput = {
@@ -173,6 +174,7 @@ export function ExpenseFormPage({
   planChanges = [],
   relatedExpenses = [],
   initialScheduleId,
+  initialProjectId,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -187,6 +189,19 @@ export function ExpenseFormPage({
         base.category = item.category ?? "";
         base.hasCost = true;
         if (item.plannedValue) base.totalValue = String(item.plannedValue);
+        if (item.projectId) base.projectId = item.projectId;
+      }
+    }
+    if (initialProjectId) {
+      const project = projects.find((p) => p.id === initialProjectId);
+      if (project) {
+        base.projectId = project.id;
+        if (project.projectType === "cliente") {
+          base.expenseScope = "projeto_cliente";
+          base.clientId = project.clientId ?? null;
+        } else {
+          base.expenseScope = "kn_interno";
+        }
       }
     }
     return base;
@@ -199,7 +214,7 @@ export function ExpenseFormPage({
   const belongsTo = form.expenseScope === "projeto_cliente" ? "projeto" : "kn";
   const internalProjects = useMemo(() => filterInternalProjects(projects), [projects]);
   const clientProjects = useMemo(
-    () => (form.clientId ? filterClientProjects(projects, form.clientId) : []),
+    () => (form.clientId ? filterClientProjectsForExpenses(projects, form.clientId) : []),
     [projects, form.clientId]
   );
   const selectedProject = projects.find((p) => p.id === form.projectId);

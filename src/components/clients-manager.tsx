@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Users, Headphones } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, FolderKanban } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,23 @@ import {
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { deleteClient } from "@/lib/actions/clients";
 import { formatCurrency } from "@/lib/format";
-import type { Client } from "@/lib/db/schema";
 
-export function ClientsManager({ items }: { items: Client[] }) {
+type ClientRow = {
+  id: number;
+  name: string;
+  slug: string | null;
+  company: string | null;
+  email: string | null;
+  phone: string | null;
+  status: string | null;
+  contractValue: string | null;
+  projectCount: number;
+  activeProjects: number;
+};
+
+export function ClientsManager({ items }: { items: ClientRow[] }) {
   const [search, setSearch] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
   const [pending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
@@ -33,8 +45,7 @@ export function ClientsManager({ items }: { items: Client[] }) {
       (c) =>
         c.name.toLowerCase().includes(q) ||
         (c.company?.toLowerCase().includes(q) ?? false) ||
-        (c.email?.toLowerCase().includes(q) ?? false) ||
-        (c.project?.toLowerCase().includes(q) ?? false)
+        (c.email?.toLowerCase().includes(q) ?? false)
     );
   }, [items, search]);
 
@@ -56,7 +67,7 @@ export function ClientsManager({ items }: { items: Client[] }) {
     <div className="kn-page">
       <PageHeader
         title="Clientes"
-        description="Cadastro completo — busque, edite em tela cheia e acesse o atendimento de cada cliente."
+        description="Cadastro de clientes e seus projetos — cada iniciativa nasce como projeto com status único."
         icon={Users}
       >
         <Button asChild className="kn-btn-primary gap-2">
@@ -67,7 +78,7 @@ export function ClientsManager({ items }: { items: Client[] }) {
       <ListSearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Buscar por nome, empresa, e-mail ou projeto..."
+        placeholder="Buscar por nome, empresa ou e-mail..."
       />
 
       {filtered.length === 0 ? (
@@ -84,7 +95,7 @@ export function ClientsManager({ items }: { items: Client[] }) {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Empresa</TableHead>
-                <TableHead>Projeto</TableHead>
+                <TableHead>Projetos</TableHead>
                 <TableHead>Contato</TableHead>
                 <TableHead>Contrato</TableHead>
                 <TableHead>Status</TableHead>
@@ -94,9 +105,25 @@ export function ClientsManager({ items }: { items: Client[] }) {
             <TableBody>
               {filtered.map((item) => (
                 <TableRow key={item.id} className="kn-row-hover">
-                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="font-medium">
+                    {item.slug ? (
+                      <Link href={`/clientes/${item.slug}`} className="hover:text-primary hover:underline">
+                        {item.name}
+                      </Link>
+                    ) : (
+                      item.name
+                    )}
+                  </TableCell>
                   <TableCell>{item.company || "—"}</TableCell>
-                  <TableCell>{item.project || "—"}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <FolderKanban className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{item.activeProjects} ativos</span>
+                      {item.projectCount > item.activeProjects && (
+                        <span className="text-muted-foreground">/ {item.projectCount} total</span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="text-sm">{item.email || "—"}</div>
                     {item.phone && <div className="text-xs text-muted-foreground">{item.phone}</div>}
@@ -108,9 +135,9 @@ export function ClientsManager({ items }: { items: Client[] }) {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       {item.slug && (
-                        <Button size="icon" variant="ghost" asChild title="Atendimento">
-                          <Link href={`/atendimento/clientes/${item.slug}`}>
-                            <Headphones className="h-4 w-4" />
+                        <Button size="icon" variant="ghost" asChild title="Ver projetos">
+                          <Link href={`/clientes/${item.slug}`}>
+                            <FolderKanban className="h-4 w-4" />
                           </Link>
                         </Button>
                       )}
@@ -144,7 +171,7 @@ export function ClientsManager({ items }: { items: Client[] }) {
         description={
           deleteTarget ? (
             <>
-              <strong>{deleteTarget.name}</strong> e todos os dados vinculados serão removidos.
+              <strong>{deleteTarget.name}</strong> e todos os projetos vinculados serão removidos.
             </>
           ) : null
         }

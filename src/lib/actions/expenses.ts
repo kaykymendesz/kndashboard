@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { expenses, expensePlanChanges, scheduleItems, projects, clients, isArchivedProject } from "@/lib/db/schema";
+import { expenses, expensePlanChanges, scheduleItems, projects, clients, canAcceptNewExpenses, isArchivedProject } from "@/lib/db/schema";
 import { parseDate, parseNumber } from "@/lib/format";
 import { getEffectivePlanValue, splitPartnerShares } from "@/lib/expense-rateio";
 import type { ExpenseInput } from "@/lib/expense-input";
@@ -28,6 +28,10 @@ async function resolveExpenseAllocation(input: ExpenseInput) {
 
   if (isArchivedProject(project)) {
     throw new Error("Projetos arquivados não aceitam novos lançamentos.");
+  }
+
+  if (!canAcceptNewExpenses(project)) {
+    throw new Error("Projetos concluídos ou cancelados não aceitam novos lançamentos.");
   }
 
   expenseScope = input.expenseScope ?? resolveExpenseScope(project);
