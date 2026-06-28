@@ -185,7 +185,12 @@ export function DashboardShell({
   });
 
   const headerBadge = shell?.headerBadge ?? "Painel Gerencial";
-  const mobileTitle = shell?.subtitle === "Atendimento a Clientes" ? "K&N Atendimento" : "K&N Dashboard";
+  const mobileTitle =
+    shell?.subtitle === "Atendimento a Clientes"
+      ? "K&N Atendimento"
+      : shell?.subtitle === "Painel Operacional"
+        ? "K&N Operacional"
+        : "K&N Dashboard";
 
   return (
     <SidebarProvider>

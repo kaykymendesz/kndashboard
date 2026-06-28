@@ -43,4 +43,11 @@ export type ExpenseInput = {
   autoRenew?: boolean;
   expirationDate?: string;
   registeredBy?: string;
+  expenseScope?: string;
+  costCenter?: string;
+  paymentResponsible?: string;
+  reimbursementStatus?: string;
+  hasSubscription?: boolean;
+  subscriptionPlan?: string;
+  subscriptionRecurrence?: string;
 };

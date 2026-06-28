@@ -1,14 +1,53 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { expenses, expensePlanChanges, scheduleItems } from "@/lib/db/schema";
+import { expenses, expensePlanChanges, scheduleItems, projects, clients, isArchivedProject } from "@/lib/db/schema";
 import { parseDate, parseNumber } from "@/lib/format";
 import { getEffectivePlanValue, splitPartnerShares } from "@/lib/expense-rateio";
 import type { ExpenseInput } from "@/lib/expense-input";
 import type { PlanChangeInput } from "@/lib/expense-rateio";
 import { statusFromSettlement } from "@/lib/expense-settlement";
+import { buildCostCenter, resolveExpenseScope } from "@/lib/cost-center";
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+async function resolveExpenseAllocation(input: ExpenseInput) {
+  let projectId = input.projectId ?? null;
+  let clientId = input.clientId ?? null;
+  let expenseScope = input.expenseScope ?? "kn_interno";
+  let costCenter = input.costCenter ?? "";
+
+  if (!projectId) {
+    return { projectId, clientId, expenseScope, costCenter };
+  }
+
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  if (!project) {
+    return { projectId, clientId, expenseScope, costCenter };
+  }
+
+  if (isArchivedProject(project)) {
+    throw new Error("Projetos arquivados não aceitam novos lançamentos.");
+  }
+
+  expenseScope = input.expenseScope ?? resolveExpenseScope(project);
+
+  if (expenseScope === "projeto_cliente" || project.projectType === "cliente") {
+    expenseScope = "projeto_cliente";
+    clientId = clientId ?? project.clientId ?? null;
+  } else {
+    expenseScope = "kn_interno";
+    clientId = null;
+  }
+
+  const client = clientId
+    ? await db.query.clients.findFirst({ where: eq(clients.id, clientId) })
+    : null;
+
+  costCenter = buildCostCenter(project, client ?? undefined);
+
+  return { projectId, clientId, expenseScope, costCenter };
+}
 
 function mapExpenseInput(input: ExpenseInput) {
   const hasCost = input.hasCost !== false;
@@ -17,6 +56,8 @@ function mapExpenseInput(input: ExpenseInput) {
 
   const validChanges = (input.planChanges ?? []).filter((c) => c.planName.trim());
   const lastChange = validChanges[validChanges.length - 1];
+  const effectivePlanName =
+    lastChange?.planName ?? input.subscriptionPlan ?? input.contractedPlan ?? input.planVariant ?? "";
 
   const effectivePlanValue = hasCost ? getEffectivePlanValue(input) : 0;
   let totalValue = hasCost ? String(parseNumber(input.totalValue)) : "0";
@@ -46,11 +87,19 @@ function mapExpenseInput(input: ExpenseInput) {
     status = derivedStatus;
   }
 
+  const hasSubscription = input.hasSubscription ?? false;
+  let expenseType = input.expenseType ?? "Único";
+  if (hasSubscription) {
+    const rec = input.subscriptionRecurrence ?? "";
+    if (rec === "Mensal") expenseType = "Mensal";
+    else if (rec === "Anual") expenseType = "Anual";
+  }
+
   return {
     description: input.description,
-    expenseType: input.expenseType ?? "Único",
-    planVariant: input.contractedPlan ?? input.planVariant ?? "",
-    contractedPlan: input.contractedPlan ?? input.planVariant ?? "",
+    expenseType,
+    planVariant: effectivePlanName,
+    contractedPlan: effectivePlanName,
     contractedPlanValue:
       input.contractedPlanValue && hasCost
         ? String(parseNumber(input.contractedPlanValue))
@@ -89,8 +138,21 @@ function mapExpenseInput(input: ExpenseInput) {
     clientId: input.clientId ?? null,
     scheduleItemId: input.scheduleItemId ?? null,
     hasCost,
+    expenseScope: input.expenseScope ?? "kn_interno",
+    costCenter: input.costCenter ?? "",
+    paymentResponsible: input.paymentResponsible ?? "K&N",
+    reimbursementStatus: input.reimbursementStatus ?? "Não possui",
+    hasSubscription: input.hasSubscription ?? false,
+    subscriptionPlan: input.subscriptionPlan ?? effectivePlanName,
+    subscriptionRecurrence: input.subscriptionRecurrence ?? "",
     updatedAt: new Date(),
   };
+}
+
+async function mapExpenseInputAsync(input: ExpenseInput) {
+  const base = mapExpenseInput(input);
+  const allocation = await resolveExpenseAllocation(input);
+  return { ...base, ...allocation };
 }
 
 async function savePlanChanges(expenseId: number, input: ExpenseInput) {
@@ -149,7 +211,7 @@ function revalidateExpensePaths(id?: number) {
 
 export async function createExpense(input: ExpenseInput, planChanges: PlanChangeInput[] = []) {
   const mergedInput = { ...input, planChanges };
-  const [row] = await db.insert(expenses).values(mapExpenseInput(mergedInput)).returning();
+  const [row] = await db.insert(expenses).values(await mapExpenseInputAsync(mergedInput)).returning();
   await savePlanChanges(row.id, mergedInput);
   await syncScheduleFromExpense(mergedInput);
   revalidateExpensePaths(row.id);
@@ -162,7 +224,7 @@ export async function updateExpense(
   planChanges: PlanChangeInput[] = []
 ) {
   const mergedInput = { ...input, planChanges };
-  await db.update(expenses).set(mapExpenseInput(mergedInput)).where(eq(expenses.id, id));
+  await db.update(expenses).set(await mapExpenseInputAsync(mergedInput)).where(eq(expenses.id, id));
   await savePlanChanges(id, mergedInput);
   await syncScheduleFromExpense(mergedInput);
   revalidateExpensePaths(id);
@@ -203,8 +265,9 @@ export async function getExpensesWithRelations() {
 
   return allExpenses.map((e) => ({
     ...e,
-    projectName: e.projectId ? projectMap.get(e.projectId) ?? "—" : "K&N Empresa",
+    projectName: e.projectId ? projectMap.get(e.projectId) ?? "—" : "—",
     clientName: e.clientId ? clientMap.get(e.clientId) ?? "—" : "—",
+    costCenterLabel: e.costCenter || (e.projectId ? projectMap.get(e.projectId) ?? "—" : "—"),
     scheduleTitle: e.scheduleItemId ? scheduleMap.get(e.scheduleItemId) ?? "—" : "—",
   }));
 }

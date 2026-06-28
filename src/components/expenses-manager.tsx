@@ -39,6 +39,8 @@ type ExpenseRow = {
   hasCost: boolean | null;
   projectName: string;
   clientName: string;
+  costCenterLabel?: string;
+  reimbursementStatus?: string | null;
 };
 
 export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
@@ -53,6 +55,7 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
         e.description.toLowerCase().includes(q) ||
         e.projectName.toLowerCase().includes(q) ||
         e.clientName.toLowerCase().includes(q) ||
+        (e.costCenterLabel?.toLowerCase().includes(q) ?? false) ||
         (e.category?.toLowerCase().includes(q) ?? false)
     );
   }, [items, search]);
@@ -97,8 +100,8 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
               <TableHead>Tipo</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Centro de custo</TableHead>
+              <TableHead>Reembolso</TableHead>
               <TableHead>Pagamento</TableHead>
-              <TableHead>Cliente</TableHead>
               <TableHead>Compra</TableHead>
               <TableHead>Vencimento</TableHead>
               <TableHead>Total</TableHead>
@@ -133,12 +136,16 @@ export function ExpensesManager({ items }: { items: ExpenseRow[] }) {
                       <Badge variant="secondary" className="ml-1 text-[10px]">Sem custo</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">{item.projectName}</TableCell>
+                  <TableCell className="text-sm">{item.costCenterLabel ?? item.projectName}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px]">
+                      {item.reimbursementStatus ?? "Não possui"}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {item.paymentType || "—"}
                     {item.paymentCard ? ` · ${item.paymentCard}` : ""}
                   </TableCell>
-                  <TableCell className="text-sm">{item.clientName}</TableCell>
                   <TableCell>
                     <Link href={`/gastos/${item.id}`} className="hover:text-primary hover:underline">
                       {formatDate(item.purchaseDate)}

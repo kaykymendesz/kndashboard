@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Wallet, Plus, Trash2 } from "lucide-react";
@@ -35,6 +35,10 @@ import {
 import {
   EXPENSE_TYPES,
   PAYMENT_TYPES,
+  PAYMENT_RESPONSIBLES,
+  REIMBURSEMENT_STATUSES,
+  SUBSCRIPTION_PLANS,
+  SUBSCRIPTION_RECURRENCES,
   type Client,
   type Expense,
   type ExpensePlanChange,
@@ -42,6 +46,7 @@ import {
   type ScheduleItem,
   type Vendor,
 } from "@/lib/db/schema";
+import { buildCostCenter, filterClientProjects, filterInternalProjects } from "@/lib/cost-center";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +88,13 @@ const emptyForm: ExpenseInput = {
   scheduleItemId: null,
   projectId: null,
   clientId: null,
+  expenseScope: "kn_interno",
+  costCenter: "",
+  paymentResponsible: "K&N",
+  reimbursementStatus: "Não possui",
+  hasSubscription: false,
+  subscriptionPlan: "",
+  subscriptionRecurrence: "Pagamento único",
   planChanges: [],
 };
 
@@ -114,6 +126,13 @@ function toForm(expense: Expense, planChanges: ExpensePlanChange[]): ExpenseInpu
     kaykyShare: String(expense.kaykyShare ?? 0),
     projectId: expense.projectId,
     clientId: expense.clientId,
+    expenseScope: expense.expenseScope ?? (expense.clientId ? "projeto_cliente" : "kn_interno"),
+    costCenter: expense.costCenter ?? "",
+    paymentResponsible: expense.paymentResponsible ?? "K&N",
+    reimbursementStatus: expense.reimbursementStatus ?? "Não possui",
+    hasSubscription: expense.hasSubscription ?? false,
+    subscriptionPlan: expense.subscriptionPlan ?? expense.contractedPlan ?? "",
+    subscriptionRecurrence: expense.subscriptionRecurrence ?? expense.expenseType ?? "Pagamento único",
     scheduleItemId: expense.scheduleItemId,
     hasCost: expense.hasCost !== false,
     status: expense.status ?? "Pendente",
@@ -177,6 +196,16 @@ export function ExpenseFormPage({
   const hasCost = form.hasCost !== false;
   const showCardField = form.paymentType === "Crédito" || form.paymentType === "Débito";
   const planChangesList = form.planChanges ?? [];
+  const belongsTo = form.expenseScope === "projeto_cliente" ? "projeto" : "kn";
+  const internalProjects = useMemo(() => filterInternalProjects(projects), [projects]);
+  const clientProjects = useMemo(
+    () => (form.clientId ? filterClientProjects(projects, form.clientId) : []),
+    [projects, form.clientId]
+  );
+  const selectedProject = projects.find((p) => p.id === form.projectId);
+  const selectedClient = clients.find((c) => c.id === form.clientId);
+  const costCenterPreview =
+    form.costCenter || buildCostCenter(selectedProject, selectedClient) || "—";
 
   const set = (key: keyof ExpenseInput, value: string | number | null | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -204,6 +233,14 @@ export function ExpenseFormPage({
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (hasCost && !form.projectId) {
+      toast.error("Selecione o projeto (interno ou de cliente).");
+      return;
+    }
+    if (hasCost && form.expenseScope === "projeto_cliente" && !form.clientId) {
+      toast.error("Selecione o cliente do projeto.");
+      return;
+    }
     const planChangesToSave = collectPlanChangesForSave(form, draftChange);
     startTransition(async () => {
       try {
@@ -243,7 +280,7 @@ export function ExpenseFormPage({
 
       <PageHeader
         title={expense ? "Editar gasto" : "Novo gasto"}
-        description="Plano e valores sincronizam o rateio entre sócios. Centro de custo K&N ou projeto."
+        description="Vincule o gasto a um projeto interno ou de cliente. Centro de custo, rateio e reembolso são calculados automaticamente."
         icon={Wallet}
       />
 
@@ -259,7 +296,88 @@ export function ExpenseFormPage({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Tipo de gasto *</Label>
+                <Label>Possui assinatura?</Label>
+                <Select
+                  value={form.hasSubscription ? "sim" : "nao"}
+                  onValueChange={(v) => {
+                    const isSub = v === "sim";
+                    setForm((f) => ({
+                      ...f,
+                      hasSubscription: isSub,
+                      subscriptionRecurrence: isSub ? f.subscriptionRecurrence || "Mensal" : "Pagamento único",
+                      expenseType: isSub
+                        ? f.subscriptionRecurrence === "Anual"
+                          ? "Anual"
+                          : f.subscriptionRecurrence === "Mensal"
+                            ? "Mensal"
+                            : f.expenseType
+                        : "Único",
+                    }));
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nao">Não</SelectItem>
+                    <SelectItem value="sim">Sim</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Data inicial da compra</Label>
+                <Input type="date" value={form.purchaseDate} onChange={(e) => set("purchaseDate", e.target.value)} />
+              </div>
+            </div>
+
+            {form.hasSubscription && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Plano</Label>
+                  <Select
+                    value={form.subscriptionPlan || "none"}
+                    onValueChange={(v) => {
+                      const plan = v === "none" ? "" : v;
+                      setForm((f) => ({
+                        ...f,
+                        subscriptionPlan: plan,
+                        contractedPlan: plan,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Selecione</SelectItem>
+                      {SUBSCRIPTION_PLANS.map((p) => (
+                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Recorrência</Label>
+                  <Select
+                    value={form.subscriptionRecurrence || "Mensal"}
+                    onValueChange={(v) =>
+                      setForm((f) => ({
+                        ...f,
+                        subscriptionRecurrence: v,
+                        expenseType: v === "Anual" ? "Anual" : v === "Mensal" ? "Mensal" : f.expenseType,
+                      }))
+                    }
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {SUBSCRIPTION_RECURRENCES.map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {!form.hasSubscription && (
+              <div className="grid gap-2 max-w-xs">
+                <Label>Tipo de gasto</Label>
                 <Select value={form.expenseType} onValueChange={(v) => set("expenseType", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -269,17 +387,20 @@ export function ExpenseFormPage({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label>Data inicial da compra</Label>
-                <Input type="date" value={form.purchaseDate} onChange={(e) => set("purchaseDate", e.target.value)} />
-              </div>
-            </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Plano contratado</Label>
+                <Label>Plano contratado {form.hasSubscription ? "(vigente)" : ""}</Label>
                 <Input
-                  value={form.contractedPlan}
-                  onChange={(e) => set("contractedPlan", e.target.value)}
+                  value={form.contractedPlan || form.subscriptionPlan}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      contractedPlan: e.target.value,
+                      subscriptionPlan: f.hasSubscription ? e.target.value : f.subscriptionPlan,
+                    }))
+                  }
                   placeholder="Ex: Pro, Business"
                 />
               </div>
@@ -384,48 +505,164 @@ export function ExpenseFormPage({
 
             <p className="text-xs text-muted-foreground rounded-lg bg-muted/40 px-3 py-2">
               <strong>Plano → rateio:</strong> valor do plano contratado ou da última alteração preenche automaticamente
-              total, cota Elaine e cota Kayky (metade para cada).{" "}
-              <strong>Centro de custo:</strong> K&N Empresa ou projeto — cliente só quando for gasto do cliente.
+              total, cota Elaine e cota Kayky (50/50 em projetos internos).{" "}
+              <strong>Centro de custo</strong> é definido pelo projeto selecionado.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid gap-4 rounded-xl border border-border/70 p-4 bg-muted/20">
               <div className="grid gap-2">
-                <Label>Centro de custo (rateio)</Label>
+                <Label>Este gasto pertence a</Label>
                 <Select
-                  value={form.projectId ? String(form.projectId) : "kn"}
+                  value={belongsTo}
                   onValueChange={(v) => {
-                    set("projectId", v === "kn" ? null : Number(v));
-                    if (v === "kn") set("clientId", null);
+                    if (v === "kn") {
+                      setForm((f) => ({
+                        ...f,
+                        expenseScope: "kn_interno",
+                        clientId: null,
+                        projectId: null,
+                        reimbursementStatus: "Não possui",
+                      }));
+                    } else {
+                      setForm((f) => ({
+                        ...f,
+                        expenseScope: "projeto_cliente",
+                        projectId: null,
+                        clientId: null,
+                      }));
+                    }
                   }}
                   disabled={!hasCost}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="kn">K&N Empresa — gasto geral</SelectItem>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                    <SelectItem value="kn">Empresa K&N — projeto interno</SelectItem>
+                    <SelectItem value="projeto">Projeto de cliente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {belongsTo === "kn" ? (
+                <div className="grid gap-2">
+                  <Label>Projeto interno *</Label>
+                  <Select
+                    value={form.projectId ? String(form.projectId) : "none"}
+                    onValueChange={(v) => {
+                      const id = v === "none" ? null : Number(v);
+                      setForm((f) => syncFormRateioFromPlan({ ...f, projectId: id, clientId: null, expenseScope: "kn_interno" }));
+                    }}
+                    disabled={!hasCost}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Selecione</SelectItem>
+                      {internalProjects.map((p) => (
+                        <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] text-muted-foreground">Rateio automático: Elaine 50% · Kayky 50%</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Cliente *</Label>
+                    <Select
+                      value={form.clientId ? String(form.clientId) : "none"}
+                      onValueChange={(v) =>
+                        setForm((f) => ({
+                          ...f,
+                          clientId: v === "none" ? null : Number(v),
+                          projectId: null,
+                          expenseScope: "projeto_cliente",
+                        }))
+                      }
+                      disabled={!hasCost}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Selecione</SelectItem>
+                        {clients.map((c) => (
+                          <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Projeto *</Label>
+                    <Select
+                      value={form.projectId ? String(form.projectId) : "none"}
+                      onValueChange={(v) =>
+                        setForm((f) => ({
+                          ...f,
+                          projectId: v === "none" ? null : Number(v),
+                          expenseScope: "projeto_cliente",
+                        }))
+                      }
+                      disabled={!hasCost || !form.clientId}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Selecione</SelectItem>
+                        {clientProjects.map((p) => (
+                          <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {form.clientId && clientProjects.length === 0 && (
+                      <p className="text-[11px] text-amber-600">Nenhum projeto ativo para este cliente.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-2">
+                <Label>Centro de custo (automático)</Label>
+                <Input readOnly value={costCenterPreview} className="bg-muted/50" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Responsável pelo pagamento</Label>
+                <Select
+                  value={form.paymentResponsible ?? "K&N"}
+                  onValueChange={(v) =>
+                    setForm((f) => ({
+                      ...f,
+                      paymentResponsible: v,
+                      reimbursementStatus:
+                        v === "K&N" && f.expenseScope === "projeto_cliente" && f.reimbursementStatus === "Não possui"
+                          ? "Aguardando reembolso"
+                          : v !== "K&N"
+                            ? "Não possui"
+                            : f.reimbursementStatus,
+                    }))
+                  }
+                  disabled={!hasCost}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_RESPONSIBLES.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>Cliente (opcional)</Label>
+                <Label>Reembolso</Label>
                 <Select
-                  value={form.clientId ? String(form.clientId) : "none"}
-                  onValueChange={(v) => set("clientId", v === "none" ? null : Number(v))}
-                  disabled={!hasCost || !form.projectId}
+                  value={form.reimbursementStatus ?? "Não possui"}
+                  onValueChange={(v) => set("reimbursementStatus", v)}
+                  disabled={!hasCost || form.paymentResponsible !== "K&N"}
                 >
-                  <SelectTrigger><SelectValue placeholder="Sem cliente" /></SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Sem cliente — gasto K&N</SelectItem>
-                    {clients.map((c) => (
-                      <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    {REIMBURSEMENT_STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {!form.projectId && (
-                  <p className="text-[11px] text-muted-foreground">Gasto da empresa — cliente não se aplica.</p>
-                )}
               </div>
             </div>
 

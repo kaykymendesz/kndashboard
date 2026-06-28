@@ -10,10 +10,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createProject, updateProject, deleteProject, type ProjectInput } from "@/lib/actions/projects";
-import type { Project } from "@/lib/db/schema";
+import { PROJECT_TYPES, type Client, type Project } from "@/lib/db/schema";
 
-export function ProjectFormPage({ project }: { project?: Project }) {
+type Props = {
+  project?: Project;
+  clients?: Client[];
+};
+
+export function ProjectFormPage({ project, clients = [] }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState<ProjectInput>(
@@ -23,14 +35,33 @@ export function ProjectFormPage({ project }: { project?: Project }) {
           slug: project.slug,
           description: project.description ?? "",
           status: project.status ?? "Ativo",
+          projectType: project.projectType ?? "interno",
+          clientId: project.clientId ?? null,
+          contractedRevenue: project.contractedRevenue ? String(project.contractedRevenue) : "",
           color: project.color ?? "#1e3a5f",
           notes: project.notes ?? "",
         }
-      : { name: "", slug: "", description: "", status: "Ativo", color: "#1e3a5f", notes: "" }
+      : {
+          name: "",
+          slug: "",
+          description: "",
+          status: "Ativo",
+          projectType: "interno",
+          clientId: null,
+          contractedRevenue: "",
+          color: "#1e3a5f",
+          notes: "",
+        }
   );
+
+  const isClientProject = form.projectType === "cliente";
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isClientProject && !form.clientId) {
+      toast.error("Selecione o cliente do projeto.");
+      return;
+    }
     startTransition(async () => {
       try {
         if (project) {
@@ -67,6 +98,60 @@ export function ProjectFormPage({ project }: { project?: Project }) {
       <form onSubmit={onSubmit}>
         <Card className="kn-card">
           <CardContent className="p-6 grid gap-4">
+            <div className="grid gap-2">
+              <Label>Tipo de projeto</Label>
+              <Select
+                value={form.projectType ?? "interno"}
+                onValueChange={(v) =>
+                  setForm({
+                    ...form,
+                    projectType: v,
+                    clientId: v === "cliente" ? form.clientId : null,
+                    contractedRevenue: v === "cliente" ? form.contractedRevenue : "",
+                  })
+                }
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PROJECT_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t === "interno" ? "Projeto interno K&N" : t === "cliente" ? "Projeto de cliente" : "Arquivado"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {isClientProject && (
+              <>
+                <div className="grid gap-2">
+                  <Label>Cliente *</Label>
+                  <Select
+                    value={form.clientId ? String(form.clientId) : "none"}
+                    onValueChange={(v) => setForm({ ...form, clientId: v === "none" ? null : Number(v) })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Selecione</SelectItem>
+                      {clients.map((c) => (
+                        <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Receita contratada (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={form.contractedRevenue}
+                    onChange={(e) => setForm({ ...form, contractedRevenue: e.target.value })}
+                    placeholder="Ex: 25000"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Nome</Label>

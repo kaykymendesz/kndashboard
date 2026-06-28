@@ -15,6 +15,9 @@ export const projects = pgTable("projects", {
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   description: text("description").default(""),
   status: varchar("status", { length: 50 }).default("Ativo"),
+  projectType: varchar("project_type", { length: 30 }).default("interno"),
+  clientId: integer("client_id").references(() => clients.id),
+  contractedRevenue: numeric("contracted_revenue", { precision: 12, scale: 2 }),
   color: varchar("color", { length: 20 }).default("#1e3a5f"),
   notes: text("notes").default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -108,6 +111,13 @@ export const expenses = pgTable("expenses", {
   planChangeDate: timestamp("plan_change_date"),
   paymentType: varchar("payment_type", { length: 50 }).default(""),
   paymentCard: varchar("payment_card", { length: 120 }).default(""),
+  expenseScope: varchar("expense_scope", { length: 30 }).default("kn_interno"),
+  costCenter: varchar("cost_center", { length: 300 }).default(""),
+  paymentResponsible: varchar("payment_responsible", { length: 50 }).default("K&N"),
+  reimbursementStatus: varchar("reimbursement_status", { length: 50 }).default("Não possui"),
+  hasSubscription: boolean("has_subscription").default(false),
+  subscriptionPlan: varchar("subscription_plan", { length: 50 }).default(""),
+  subscriptionRecurrence: varchar("subscription_recurrence", { length: 50 }).default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -348,3 +358,46 @@ export const COMPANY_PROJECT_SLUG = "kn-empresa";
 
 export const REVENUE_STATUSES = ["Recebido", "Pendente"] as const;
 export type RevenueStatus = (typeof REVENUE_STATUSES)[number];
+
+export const PROJECT_TYPES = ["interno", "cliente", "arquivado"] as const;
+export type ProjectType = (typeof PROJECT_TYPES)[number];
+
+export const EXPENSE_SCOPES = ["kn_interno", "projeto_cliente"] as const;
+export type ExpenseScope = (typeof EXPENSE_SCOPES)[number];
+
+export const PAYMENT_RESPONSIBLES = ["K&N", "Cliente", "Terceiro"] as const;
+export type PaymentResponsible = (typeof PAYMENT_RESPONSIBLES)[number];
+
+export const REIMBURSEMENT_STATUSES = [
+  "Não possui",
+  "Aguardando reembolso",
+  "Reembolsado",
+] as const;
+export type ReimbursementStatus = (typeof REIMBURSEMENT_STATUSES)[number];
+
+export const SUBSCRIPTION_PLANS = [
+  "Starter",
+  "Pro",
+  "Pro+",
+  "Business",
+  "Enterprise",
+  "Outro",
+] as const;
+export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
+
+export const SUBSCRIPTION_RECURRENCES = [
+  "Pagamento único",
+  "Mensal",
+  "Trimestral",
+  "Semestral",
+  "Anual",
+  "Personalizado",
+] as const;
+export type SubscriptionRecurrence = (typeof SUBSCRIPTION_RECURRENCES)[number];
+
+export function isArchivedProject(project: { projectType?: string | null; status?: string | null }) {
+  return (
+    project.projectType === "arquivado" ||
+    (project.status?.toLowerCase().includes("arquiv") ?? false)
+  );
+}

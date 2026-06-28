@@ -26,9 +26,11 @@ export default async function ProjectDetailPage({ params }: Props) {
     <Suspense fallback={<div className="p-8 text-muted-foreground">Carregando projeto...</div>}>
       <ProjectDetailTabs
         project={data.project}
+        client={data.client}
         details={data.details}
         expenses={data.expenses}
         totalSpent={data.totalSpent}
+        finance={data.finance}
         activities={activities}
         statusOptions={statuses}
         priorityOptions={priorities}

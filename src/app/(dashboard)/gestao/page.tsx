@@ -18,6 +18,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OverviewExpenseSections } from "@/components/overview-expense-sections";
+import { PendingReimbursementsCard } from "@/components/pending-reimbursements-card";
 
 export default async function GestaoHomePage() {
   const stats = await getDashboardStats();
@@ -39,6 +40,20 @@ export default async function GestaoHomePage() {
           <MoneyStat title="Total pago" amount={stats.totalPaid} icon={TrendingUp} accent="success" />
           <MoneyStat title="Pendente Elaine" amount={stats.elainePending} icon={AlertTriangle} accent="warning" />
           <MoneyStat title="Pendente Kayky" amount={stats.kaykyPending} icon={AlertTriangle} accent="warning" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mt-4">
+          <MoneyStat title="Receita recebida" amount={stats.revenueReceived} icon={TrendingUp} accent="success" />
+          <MoneyStat title="Receita a receber" amount={stats.revenueToReceive} icon={Calendar} />
+          <MoneyStat
+            title="Lucro total"
+            amount={stats.totalProfit}
+            icon={TrendingUp}
+            accent={stats.totalProfit >= 0 ? "success" : "warning"}
+          />
+          <PendingReimbursementsCard
+            total={stats.pendingReimbursementsTotal}
+            items={stats.pendingReimbursements}
+          />
         </div>
       </section>
 

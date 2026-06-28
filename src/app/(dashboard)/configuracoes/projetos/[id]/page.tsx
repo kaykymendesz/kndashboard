@@ -12,5 +12,6 @@ export default async function EditarProjetoConfigPage({ params }: Props) {
   if (Number.isNaN(projectId)) notFound();
   const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
   if (!project) notFound();
-  return <ProjectFormPage project={project} />;
+  const clients = await db.query.clients.findMany({ orderBy: (c, { asc }) => [asc(c.name)] });
+  return <ProjectFormPage project={project} clients={clients} />;
 }

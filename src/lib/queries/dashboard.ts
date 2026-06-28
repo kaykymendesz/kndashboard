@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { activities, expenses, revenues, scheduleItems, clients, projects } from "@/lib/db/schema";
 import type { Expense, ScheduleItem } from "@/lib/db/schema";
+import { getPendingReimbursements, getPendingReimbursementsTotal } from "@/lib/project-finance";
 
 function sumValues(items: { totalValue?: string | null }[]) {
   return items.reduce((sum, e) => sum + Number(e.totalValue ?? 0), 0);
@@ -95,6 +96,22 @@ export async function getDashboardStats() {
     })
     .slice(0, 5);
 
+  const allRevenues = await db.select().from(revenues);
+  const revenueReceived = allRevenues
+    .filter((r) => r.status === "Recebido")
+    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  const revenuePending = allRevenues
+    .filter((r) => r.status === "Pendente")
+    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  const contractedFromProjects = allProjects.reduce(
+    (s, p) => s + Number(p.contractedRevenue ?? 0),
+    0
+  );
+  const revenueToReceive = Math.max(revenuePending, contractedFromProjects - revenueReceived);
+  const totalProfit = revenueReceived - totalInvested;
+  const pendingReimbursementsTotal = await getPendingReimbursementsTotal();
+  const pendingReimbursements = await getPendingReimbursements();
+
   return {
     totalInvested,
     totalPaid,
@@ -104,6 +121,12 @@ export async function getDashboardStats() {
     elaineInvested,
     kaykyInvested,
     knTotal,
+    revenueReceived,
+    revenuePending,
+    revenueToReceive,
+    totalProfit,
+    pendingReimbursementsTotal,
+    pendingReimbursements,
     expensesByPartner,
     expensesByProject,
     expensesByClient,
