@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" role="img" aria-label="K&N Tecnologia">
+  <defs>
+    <linearGradient id="knPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9B30FF"/>
+      <stop offset="100%" stop-color="#6A0DAD"/>
+    </linearGradient>
+    <linearGradient id="knBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4A00E0"/>
+      <stop offset="100%" stop-color="#007BFF"/>
+    </linearGradient>
+    <linearGradient id="knBlend" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8E2DE2"/>
+      <stop offset="100%" stop-color="#4A00E0"/>
+    </linearGradient>
+  </defs>
+  <!-- K -->
+  <path fill="url(#knPurple)" d="M8 12 L8 108 L32 108 L32 72 L58 108 L88 108 L52 64 L86 12 L58 12 L32 48 L32 12 Z"/>
+  <!-- N -->
+  <path fill="url(#knBlue)" d="M96 12 L96 108 L120 108 L120 48 L152 108 L176 108 L176 12 L152 12 L152 72 L120 12 Z"/>
+</svg>

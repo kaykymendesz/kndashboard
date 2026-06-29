@@ -304,6 +304,126 @@ export type Quotation = typeof quotations.$inferSelect;
 export type AttendanceCase = typeof attendanceCases.$inferSelect;
 export type AttendanceStep = typeof attendanceSteps.$inferSelect;
 
+export const proposalTemplates = pgTable("proposal_templates", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  slug: varchar("slug", { length: 120 }).notNull().unique(),
+  templateType: varchar("template_type", { length: 50 }).default("proposta_comercial"),
+  layoutConfig: text("layout_config").default("{}"),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const proposalServiceCatalog = pgTable("proposal_service_catalog", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  category: varchar("category", { length: 100 }).default(""),
+  description: text("description").default(""),
+  defaultValue: numeric("default_value", { precision: 12, scale: 2 }),
+  sortOrder: integer("sort_order").default(0),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const proposalGuaranteeCatalog = pgTable("proposal_guarantee_catalog", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description").default(""),
+  sortOrder: integer("sort_order").default(0),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const commercialProposals = pgTable("commercial_proposals", {
+  id: serial("id").primaryKey(),
+  proposalNumber: varchar("proposal_number", { length: 30 }).notNull().unique(),
+  templateId: integer("template_id").references(() => proposalTemplates.id),
+  status: varchar("status", { length: 50 }).default("Em elaboração"),
+  version: integer("version").default(1),
+  clientId: integer("client_id").references(() => clients.id),
+  projectId: integer("project_id").references(() => projects.id),
+  clientName: varchar("client_name", { length: 200 }).default(""),
+  clientCompany: varchar("client_company", { length: 200 }).default(""),
+  clientDocument: varchar("client_document", { length: 50 }).default(""),
+  clientResponsible: varchar("client_responsible", { length: 200 }).default(""),
+  clientEmail: varchar("client_email", { length: 200 }).default(""),
+  clientPhone: varchar("client_phone", { length: 50 }).default(""),
+  projectName: varchar("project_name", { length: 300 }).notNull().default(""),
+  serviceType: varchar("service_type", { length: 100 }).default(""),
+  category: varchar("category", { length: 100 }).default(""),
+  projectObjective: text("project_objective").default(""),
+  description: text("description").default(""),
+  includedItems: text("included_items").default(""),
+  devValue: numeric("dev_value", { precision: 12, scale: 2 }).default("0"),
+  monthlyValue: numeric("monthly_value", { precision: 12, scale: 2 }).default("0"),
+  domainValue: numeric("domain_value", { precision: 12, scale: 2 }).default("0"),
+  hostingValue: numeric("hosting_value", { precision: 12, scale: 2 }).default("0"),
+  sslValue: numeric("ssl_value", { precision: 12, scale: 2 }).default("0"),
+  additionalValue: numeric("additional_value", { precision: 12, scale: 2 }).default("0"),
+  discountValue: numeric("discount_value", { precision: 12, scale: 2 }).default("0"),
+  totalValue: numeric("total_value", { precision: 12, scale: 2 }).default("0"),
+  paymentMethods: text("payment_methods").default("[]"),
+  installments: integer("installments").default(1),
+  downPayment: numeric("down_payment", { precision: 12, scale: 2 }).default("0"),
+  installmentValue: numeric("installment_value", { precision: 12, scale: 2 }).default("0"),
+  paymentNotes: text("payment_notes").default(""),
+  validityDays: integer("validity_days").default(60),
+  issuedAt: timestamp("issued_at"),
+  validUntil: timestamp("valid_until"),
+  deliveryDeadline: varchar("delivery_deadline", { length: 200 }).default(""),
+  city: varchar("city", { length: 100 }).default("São Paulo - SP"),
+  observations: text("observations").default(""),
+  selectedServices: text("selected_services").default("[]"),
+  selectedGuarantees: text("selected_guarantees").default("[]"),
+  customLayout: text("custom_layout").default("{}"),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const proposalVersions = pgTable("proposal_versions", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id")
+    .notNull()
+    .references(() => commercialProposals.id, { onDelete: "cascade" }),
+  versionNumber: integer("version_number").notNull(),
+  snapshot: text("snapshot").notNull(),
+  changeNote: text("change_note").default(""),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const proposalExports = pgTable("proposal_exports", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id")
+    .notNull()
+    .references(() => commercialProposals.id, { onDelete: "cascade" }),
+  format: varchar("format", { length: 20 }).notNull(),
+  versionNumber: integer("version_number"),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ProposalTemplate = typeof proposalTemplates.$inferSelect;
+export type ProposalServiceCatalog = typeof proposalServiceCatalog.$inferSelect;
+export type ProposalGuaranteeCatalog = typeof proposalGuaranteeCatalog.$inferSelect;
+export type CommercialProposal = typeof commercialProposals.$inferSelect;
+export type ProposalVersion = typeof proposalVersions.$inferSelect;
+export type ProposalExport = typeof proposalExports.$inferSelect;
+
+export const PROPOSAL_STATUSES = [
+  "Em elaboração",
+  "Enviada",
+  "Em negociação",
+  "Aprovada",
+  "Recusada",
+  "Cancelada",
+] as const;
+export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
+
+export const PROPOSAL_PAYMENT_METHODS = ["PIX", "Cartão", "Boleto", "Nota Fiscal"] as const;
+
 /** Histórico de verificações do Painel Operacional */
 export const monitorCheckLogs = pgTable("monitor_check_logs", {
   id: serial("id").primaryKey(),
