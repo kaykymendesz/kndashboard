@@ -1,10 +1,17 @@
 import type { Client, Project } from "@/lib/db/schema";
 import { canAcceptNewExpenses, isArchivedProject, isClosedProject } from "@/lib/db/schema";
+import { KN_GENERAL_COST_CENTER } from "@/lib/expense-allocation";
+
+export { KN_GENERAL_COST_CENTER };
 
 export function buildCostCenter(
   project: Pick<Project, "name" | "projectType"> | null | undefined,
-  client: Pick<Client, "name"> | null | undefined
+  client: Pick<Client, "name"> | null | undefined,
+  expenseScope?: string | null
 ): string {
+  if (expenseScope === "kn_geral" || (!project && expenseScope !== "projeto_cliente")) {
+    return KN_GENERAL_COST_CENTER;
+  }
   if (!project) return "";
   if (project.projectType === "cliente" && client?.name) {
     return `${client.name} · ${project.name}`;
@@ -20,7 +27,9 @@ export function resolveExpenseScope(
 }
 
 export function belongsToLabel(scope: string | null | undefined): string {
-  return scope === "projeto_cliente" ? "Projeto de cliente" : "Empresa K&N";
+  if (scope === "projeto_cliente") return "Projeto de cliente";
+  if (scope === "kn_geral") return "K&N — Geral";
+  return "Empresa K&N";
 }
 
 export function filterInternalProjects<T extends Project>(projects: T[]): T[] {

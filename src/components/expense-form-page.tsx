@@ -46,7 +46,15 @@ import {
   type ScheduleItem,
   type Vendor,
 } from "@/lib/db/schema";
-import { buildCostCenter, filterClientProjectsForExpenses, filterInternalProjects } from "@/lib/cost-center";
+import {
+  KN_GENERAL_COST_CENTER,
+  shouldApplyPartnerRateio,
+  isPendingClientReimbursement,
+  resolveCostCenterPreview,
+  clearPartnerRateio,
+  applyPartnerRateioFromTotal,
+} from "@/lib/expense-allocation";
+import { filterClientProjectsForExpenses, filterInternalProjects } from "@/lib/cost-center";
 import { formatCurrency, formatDate, toInputDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -89,7 +97,7 @@ const emptyForm: ExpenseInput = {
   scheduleItemId: null,
   projectId: null,
   clientId: null,
-  expenseScope: "kn_interno",
+  expenseScope: "kn_geral",
   costCenter: "",
   paymentResponsible: "K&N",
   reimbursementStatus: "Não possui",
@@ -127,7 +135,10 @@ function toForm(expense: Expense, planChanges: ExpensePlanChange[]): ExpenseInpu
     kaykyShare: String(expense.kaykyShare ?? 0),
     projectId: expense.projectId,
     clientId: expense.clientId,
-    expenseScope: expense.expenseScope ?? (expense.clientId ? "projeto_cliente" : "kn_interno"),
+    expenseScope:
+      expense.expenseScope === "kn_geral" || (!expense.projectId && !expense.clientId)
+        ? "kn_geral"
+        : expense.expenseScope ?? (expense.clientId ? "projeto_cliente" : "kn_interno"),
     costCenter: expense.costCenter ?? "",
     paymentResponsible: expense.paymentResponsible ?? "K&N",
     reimbursementStatus: expense.reimbursementStatus ?? "Não possui",
@@ -212,6 +223,9 @@ export function ExpenseFormPage({
   const showCardField = form.paymentType === "Crédito" || form.paymentType === "Débito";
   const planChangesList = form.planChanges ?? [];
   const belongsTo = form.expenseScope === "projeto_cliente" ? "projeto" : "kn";
+  const internalKind = form.expenseScope === "kn_interno" ? "com_projeto" : "geral";
+  const applyRateio = shouldApplyPartnerRateio(form);
+  const pendingClientReimbursement = isPendingClientReimbursement(form);
   const internalProjects = useMemo(() => filterInternalProjects(projects), [projects]);
   const clientProjects = useMemo(
     () => (form.clientId ? filterClientProjectsForExpenses(projects, form.clientId) : []),
@@ -219,8 +233,14 @@ export function ExpenseFormPage({
   );
   const selectedProject = projects.find((p) => p.id === form.projectId);
   const selectedClient = clients.find((c) => c.id === form.clientId);
-  const costCenterPreview =
-    form.costCenter || buildCostCenter(selectedProject, selectedClient) || "—";
+  const costCenterPreview = resolveCostCenterPreview({
+    expenseScope: form.expenseScope,
+    projectId: form.projectId,
+    clientId: form.clientId,
+    costCenter: form.costCenter,
+    projectName: selectedProject?.name,
+    clientName: selectedClient?.name,
+  });
 
   const set = (key: keyof ExpenseInput, value: string | number | null | boolean) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -248,12 +268,18 @@ export function ExpenseFormPage({
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (hasCost && !form.projectId) {
-      toast.error("Selecione o projeto (interno ou de cliente).");
-      return;
+    if (hasCost && form.expenseScope === "projeto_cliente") {
+      if (!form.clientId) {
+        toast.error("Selecione o cliente do projeto.");
+        return;
+      }
+      if (!form.projectId) {
+        toast.error("Selecione o projeto do cliente.");
+        return;
+      }
     }
-    if (hasCost && form.expenseScope === "projeto_cliente" && !form.clientId) {
-      toast.error("Selecione o cliente do projeto.");
+    if (hasCost && form.expenseScope === "kn_interno" && !form.projectId) {
+      toast.error("Selecione o projeto interno ou use gasto geral da K&N.");
       return;
     }
     const planChangesToSave = collectPlanChangesForSave(form, draftChange);
@@ -519,9 +545,9 @@ export function ExpenseFormPage({
             </div>
 
             <p className="text-xs text-muted-foreground rounded-lg bg-muted/40 px-3 py-2">
-              <strong>Plano → rateio:</strong> valor do plano contratado ou da última alteração preenche automaticamente
-              total, cota Elaine e cota Kayky (50/50 em projetos internos).{" "}
-              <strong>Centro de custo</strong> é definido pelo projeto selecionado.
+              <strong>Rateio 50/50</strong> aplica-se apenas a gastos internos da K&N.{" "}
+              Gastos de cliente com reembolso pendente registram valor a receber do cliente, sem cota Elaine/Kayky.{" "}
+              <strong>Centro de custo</strong> é definido automaticamente.
             </p>
 
             <div className="grid gap-4 rounded-xl border border-border/70 p-4 bg-muted/20">
@@ -531,53 +557,122 @@ export function ExpenseFormPage({
                   value={belongsTo}
                   onValueChange={(v) => {
                     if (v === "kn") {
-                      setForm((f) => ({
-                        ...f,
-                        expenseScope: "kn_interno",
-                        clientId: null,
-                        projectId: null,
-                        reimbursementStatus: "Não possui",
-                      }));
+                      setForm((f) =>
+                        applyPartnerRateioFromTotal(
+                          {
+                            ...f,
+                            expenseScope: "kn_geral",
+                            clientId: null,
+                            projectId: null,
+                            reimbursementStatus: "Não possui",
+                            costCenter: KN_GENERAL_COST_CENTER,
+                          },
+                          f.totalValue
+                        )
+                      );
                     } else {
-                      setForm((f) => ({
-                        ...f,
-                        expenseScope: "projeto_cliente",
-                        projectId: null,
-                        clientId: null,
-                      }));
+                      setForm((f) =>
+                        clearPartnerRateio({
+                          ...f,
+                          expenseScope: "projeto_cliente",
+                          projectId: null,
+                          clientId: null,
+                          costCenter: "",
+                          reimbursementStatus:
+                            f.paymentResponsible === "K&N" ? "Aguardando reembolso" : "Não possui",
+                        })
+                      );
                     }
                   }}
                   disabled={!hasCost}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="kn">Empresa K&N — projeto interno</SelectItem>
+                    <SelectItem value="kn">Empresa K&N — gasto interno</SelectItem>
                     <SelectItem value="projeto">Projeto de cliente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {belongsTo === "kn" ? (
-                <div className="grid gap-2">
-                  <Label>Projeto interno *</Label>
-                  <Select
-                    value={form.projectId ? String(form.projectId) : "none"}
-                    onValueChange={(v) => {
-                      const id = v === "none" ? null : Number(v);
-                      setForm((f) => syncFormRateioFromPlan({ ...f, projectId: id, clientId: null, expenseScope: "kn_interno" }));
-                    }}
-                    disabled={!hasCost}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Selecione</SelectItem>
-                      {internalProjects.map((p) => (
-                        <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-[11px] text-muted-foreground">Rateio automático: Elaine 50% · Kayky 50%</p>
-                </div>
+                <>
+                  <div className="grid gap-2">
+                    <Label>Classificação do gasto interno</Label>
+                    <Select
+                      value={internalKind}
+                      onValueChange={(v) => {
+                        if (v === "geral") {
+                          setForm((f) =>
+                            applyPartnerRateioFromTotal(
+                              {
+                                ...f,
+                                expenseScope: "kn_geral",
+                                projectId: null,
+                                clientId: null,
+                                costCenter: KN_GENERAL_COST_CENTER,
+                              },
+                              f.totalValue
+                            )
+                          );
+                        } else {
+                          setForm((f) => ({
+                            ...syncFormRateioFromPlan({
+                              ...f,
+                              expenseScope: "kn_interno",
+                              clientId: null,
+                              costCenter: "",
+                            }),
+                            projectId: null,
+                          }));
+                        }
+                      }}
+                      disabled={!hasCost}
+                    >
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="geral">Gasto interno geral da K&N</SelectItem>
+                        <SelectItem value="com_projeto">Gasto interno com projeto</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[11px] text-muted-foreground">
+                      Geral: chip, internet, domínio corporativo, ferramentas administrativas etc.
+                    </p>
+                  </div>
+                  {internalKind === "com_projeto" && (
+                    <div className="grid gap-2">
+                      <Label>Projeto interno *</Label>
+                      <Select
+                        value={form.projectId ? String(form.projectId) : "none"}
+                        onValueChange={(v) => {
+                          const id = v === "none" ? null : Number(v);
+                          setForm((f) =>
+                            syncFormRateioFromPlan({
+                              ...f,
+                              projectId: id,
+                              clientId: null,
+                              expenseScope: "kn_interno",
+                              costCenter: "",
+                            })
+                          );
+                        }}
+                        disabled={!hasCost}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Selecione</SelectItem>
+                          {internalProjects.map((p) => (
+                            <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  {applyRateio && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Rateio automático: Elaine 50% · Kayky 50%
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
@@ -585,12 +680,15 @@ export function ExpenseFormPage({
                     <Select
                       value={form.clientId ? String(form.clientId) : "none"}
                       onValueChange={(v) =>
-                        setForm((f) => ({
-                          ...f,
-                          clientId: v === "none" ? null : Number(v),
-                          projectId: null,
-                          expenseScope: "projeto_cliente",
-                        }))
+                        setForm((f) =>
+                          clearPartnerRateio({
+                            ...f,
+                            clientId: v === "none" ? null : Number(v),
+                            projectId: null,
+                            expenseScope: "projeto_cliente",
+                            costCenter: "",
+                          })
+                        )
                       }
                       disabled={!hasCost}
                     >
@@ -608,11 +706,13 @@ export function ExpenseFormPage({
                     <Select
                       value={form.projectId ? String(form.projectId) : "none"}
                       onValueChange={(v) =>
-                        setForm((f) => ({
-                          ...f,
-                          projectId: v === "none" ? null : Number(v),
-                          expenseScope: "projeto_cliente",
-                        }))
+                        setForm((f) =>
+                          clearPartnerRateio({
+                            ...f,
+                            projectId: v === "none" ? null : Number(v),
+                            expenseScope: "projeto_cliente",
+                          })
+                        )
                       }
                       disabled={!hasCost || !form.clientId}
                     >
@@ -643,16 +743,19 @@ export function ExpenseFormPage({
                 <Select
                   value={form.paymentResponsible ?? "K&N"}
                   onValueChange={(v) =>
-                    setForm((f) => ({
-                      ...f,
-                      paymentResponsible: v,
-                      reimbursementStatus:
-                        v === "K&N" && f.expenseScope === "projeto_cliente" && f.reimbursementStatus === "Não possui"
-                          ? "Aguardando reembolso"
-                          : v !== "K&N"
-                            ? "Não possui"
-                            : f.reimbursementStatus,
-                    }))
+                    setForm((f) => {
+                      const next = {
+                        ...f,
+                        paymentResponsible: v,
+                        reimbursementStatus:
+                          v === "K&N" && f.expenseScope === "projeto_cliente" && f.reimbursementStatus === "Não possui"
+                            ? "Aguardando reembolso"
+                            : v !== "K&N"
+                              ? "Não possui"
+                              : f.reimbursementStatus,
+                      };
+                      return shouldApplyPartnerRateio(next) ? next : clearPartnerRateio(next);
+                    })
                   }
                   disabled={!hasCost}
                 >
@@ -668,7 +771,12 @@ export function ExpenseFormPage({
                 <Label>Reembolso</Label>
                 <Select
                   value={form.reimbursementStatus ?? "Não possui"}
-                  onValueChange={(v) => set("reimbursementStatus", v)}
+                  onValueChange={(v) =>
+                    setForm((f) => {
+                      const next = { ...f, reimbursementStatus: v };
+                      return shouldApplyPartnerRateio(next) ? next : clearPartnerRateio(next);
+                    })
+                  }
                   disabled={!hasCost || form.paymentResponsible !== "K&N"}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -681,6 +789,15 @@ export function ExpenseFormPage({
               </div>
             </div>
 
+            {pendingClientReimbursement && (
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
+                <p className="font-medium text-amber-800 dark:text-amber-200">Valor a receber do cliente</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  A K&N desembolsou {formatCurrency(form.totalValue)} — sem rateio Elaine/Kayky. Centro de custo: {costCenterPreview}.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Valor total pago (R$) {hasCost ? "*" : ""}</Label>
@@ -690,17 +807,43 @@ export function ExpenseFormPage({
                   required={hasCost}
                   disabled={!hasCost}
                   value={form.totalValue}
-                  onChange={(e) => set("totalValue", e.target.value)}
+                  onChange={(e) =>
+                    setForm((f) => applyPartnerRateioFromTotal(f, e.target.value))
+                  }
                 />
               </div>
-              <div className="grid gap-2">
-                <Label>Cota Elaine</Label>
-                <Input type="number" step="0.01" disabled={!hasCost} value={form.elaineShare} onChange={(e) => set("elaineShare", e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label>Cota Kayky</Label>
-                <Input type="number" step="0.01" disabled={!hasCost} value={form.kaykyShare} onChange={(e) => set("kaykyShare", e.target.value)} />
-              </div>
+              {applyRateio ? (
+                <>
+                  <div className="grid gap-2">
+                    <Label>Cota Elaine</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      disabled={!hasCost}
+                      value={form.elaineShare}
+                      onChange={(e) => set("elaineShare", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Cota Kayky</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      disabled={!hasCost}
+                      value={form.kaykyShare}
+                      onChange={(e) => set("kaykyShare", e.target.value)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="sm:col-span-2 flex items-end pb-2">
+                  <p className="text-xs text-muted-foreground">
+                    {form.expenseScope === "projeto_cliente"
+                      ? "Sem rateio entre sócios — custo do projeto de cliente."
+                      : "Sem rateio aplicável."}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -775,6 +918,7 @@ export function ExpenseFormPage({
                 </Link>
               </div>
             </div>
+            {applyRateio && (
             <div className="rounded-xl border border-border/70 p-4 space-y-4 bg-muted/20">
               <div>
                 <p className="text-sm font-semibold">Quem pagou e quitação entre sócios</p>
@@ -855,6 +999,7 @@ export function ExpenseFormPage({
                 ))}
               </div>
             </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">

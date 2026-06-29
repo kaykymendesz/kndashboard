@@ -362,7 +362,7 @@ export type RevenueStatus = (typeof REVENUE_STATUSES)[number];
 export const PROJECT_TYPES = ["interno", "cliente", "arquivado"] as const;
 export type ProjectType = (typeof PROJECT_TYPES)[number];
 
-export const EXPENSE_SCOPES = ["kn_interno", "projeto_cliente"] as const;
+export const EXPENSE_SCOPES = ["kn_interno", "kn_geral", "projeto_cliente"] as const;
 export type ExpenseScope = (typeof EXPENSE_SCOPES)[number];
 
 export const PAYMENT_RESPONSIBLES = ["K&N", "Cliente", "Terceiro"] as const;

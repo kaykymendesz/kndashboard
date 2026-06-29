@@ -8,6 +8,10 @@ import type { ExpenseInput } from "@/lib/expense-input";
 import type { PlanChangeInput } from "@/lib/expense-rateio";
 import { statusFromSettlement } from "@/lib/expense-settlement";
 import { buildCostCenter, resolveExpenseScope } from "@/lib/cost-center";
+import {
+  KN_GENERAL_COST_CENTER,
+  shouldApplyPartnerRateio,
+} from "@/lib/expense-allocation";
 import { asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -17,8 +21,25 @@ async function resolveExpenseAllocation(input: ExpenseInput) {
   let expenseScope = input.expenseScope ?? "kn_interno";
   let costCenter = input.costCenter ?? "";
 
+  if (expenseScope === "kn_geral") {
+    return {
+      projectId: null,
+      clientId: null,
+      expenseScope: "kn_geral",
+      costCenter: KN_GENERAL_COST_CENTER,
+    };
+  }
+
   if (!projectId) {
-    return { projectId, clientId, expenseScope, costCenter };
+    if (expenseScope === "projeto_cliente") {
+      return { projectId, clientId, expenseScope, costCenter };
+    }
+    return {
+      projectId: null,
+      clientId: null,
+      expenseScope: "kn_geral",
+      costCenter: KN_GENERAL_COST_CENTER,
+    };
   }
 
   const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
@@ -48,7 +69,7 @@ async function resolveExpenseAllocation(input: ExpenseInput) {
     ? await db.query.clients.findFirst({ where: eq(clients.id, clientId) })
     : null;
 
-  costCenter = buildCostCenter(project, client ?? undefined);
+  costCenter = buildCostCenter(project, client ?? undefined, expenseScope);
 
   return { projectId, clientId, expenseScope, costCenter };
 }
@@ -70,24 +91,44 @@ function mapExpenseInput(input: ExpenseInput) {
   let elainePending = hasCost ? String(parseNumber(input.elainePending)) : "0";
   let kaykyPending = hasCost ? String(parseNumber(input.kaykyPending)) : "0";
 
+  const applyRateio = shouldApplyPartnerRateio(input);
+
   if (effectivePlanValue > 0) {
     totalValue = String(effectivePlanValue);
-    const { elaine, kayky } = splitPartnerShares(effectivePlanValue);
-    elaineShare = String(elaine);
-    kaykyShare = String(kayky);
-    elainePending = input.elaineSettled ? "0" : String(elaine);
-    kaykyPending = input.kaykySettled ? "0" : String(kayky);
+    if (applyRateio) {
+      const { elaine, kayky } = splitPartnerShares(effectivePlanValue);
+      elaineShare = String(elaine);
+      kaykyShare = String(kayky);
+      elainePending = input.elaineSettled ? "0" : String(elaine);
+      kaykyPending = input.kaykySettled ? "0" : String(kayky);
+    } else {
+      elaineShare = "0";
+      kaykyShare = "0";
+      elainePending = "0";
+      kaykyPending = "0";
+    }
+  } else if (!applyRateio && hasCost) {
+    elaineShare = "0";
+    kaykyShare = "0";
+    elainePending = "0";
+    kaykyPending = "0";
   }
 
-  const derivedStatus = statusFromSettlement({
-    elainePending,
-    kaykyPending,
-    elaineSettled: input.elaineSettled,
-    kaykySettled: input.kaykySettled,
-    status,
-  });
+  const derivedStatus = applyRateio
+    ? statusFromSettlement({
+        elainePending,
+        kaykyPending,
+        elaineSettled: input.elaineSettled,
+        kaykySettled: input.kaykySettled,
+        status,
+      })
+    : status;
 
-  if (status !== "Cancelado" && (input.paidBy || input.elaineSettled || input.kaykySettled)) {
+  if (
+    applyRateio &&
+    status !== "Cancelado" &&
+    (input.paidBy || input.elaineSettled || input.kaykySettled)
+  ) {
     status = derivedStatus;
   }
 
@@ -129,9 +170,9 @@ function mapExpenseInput(input: ExpenseInput) {
     paymentMethod: paymentType,
     paymentType,
     paymentCard: input.paymentCard ?? "",
-    paidBy: input.paidBy ?? "",
-    elaineSettled: input.elaineSettled ?? false,
-    kaykySettled: input.kaykySettled ?? false,
+    paidBy: applyRateio ? input.paidBy ?? "" : "",
+    elaineSettled: applyRateio ? input.elaineSettled ?? false : false,
+    kaykySettled: applyRateio ? input.kaykySettled ?? false : false,
     elainePending,
     kaykyPending,
     linkedEmail: input.linkedEmail ?? "",
@@ -271,7 +312,7 @@ export async function getExpensesWithRelations() {
     ...e,
     projectName: e.projectId ? projectMap.get(e.projectId) ?? "—" : "—",
     clientName: e.clientId ? clientMap.get(e.clientId) ?? "—" : "—",
-    costCenterLabel: e.costCenter || (e.projectId ? projectMap.get(e.projectId) ?? "—" : "—"),
+    costCenterLabel: e.costCenter || (e.projectId ? projectMap.get(e.projectId) ?? "—" : KN_GENERAL_COST_CENTER),
     scheduleTitle: e.scheduleItemId ? scheduleMap.get(e.scheduleItemId) ?? "—" : "—",
   }));
 }

@@ -1,5 +1,6 @@
 import { parseNumber } from "@/lib/format";
 import { applyPartnerPendingFromShares } from "@/lib/expense-settlement";
+import { shouldApplyPartnerRateio, clearPartnerRateio } from "@/lib/expense-allocation";
 
 export type PlanChangeInput = {
   id?: number;
@@ -21,6 +22,8 @@ export type ExpenseRateioForm = {
   kaykySettled?: boolean;
   paidBy?: string;
   status?: string;
+  expenseScope?: string | null;
+  clientId?: number | null;
 };
 
 export function splitPartnerShares(total: number) {
@@ -44,6 +47,10 @@ export function applyPlanValueToRateio<T extends ExpenseRateioForm>(
 ): T {
   const total = parseNumber(planValue);
   if (total <= 0) return form;
+
+  if (!shouldApplyPartnerRateio(form)) {
+    return { ...form, totalValue: String(total) } as T;
+  }
 
   const { elaine, kayky } = splitPartnerShares(total);
 
