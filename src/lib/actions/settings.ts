@@ -57,7 +57,7 @@ export async function getMenuItems() {
   }));
 
   return [...visible, ...missingDefaults].sort(
-    (a, b) => a.sortOrder - b.sortOrder || a.id - b.id
+    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.id - b.id
   );
 }
 
