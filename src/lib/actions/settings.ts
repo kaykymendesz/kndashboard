@@ -26,6 +26,7 @@ export async function getMenuItems() {
   const items = await db.query.menuItems.findMany({
     orderBy: [asc(menuItems.sortOrder), asc(menuItems.id)],
   });
+
   if (items.length === 0) {
     return DEFAULT_MENUS.map((m, i) => ({
       id: i,
@@ -39,7 +40,25 @@ export async function getMenuItems() {
       updatedAt: new Date(),
     }));
   }
-  return items.filter((m) => m.visible);
+
+  const visible = items.filter((m) => m.visible);
+  const hrefs = new Set(visible.map((m) => m.href));
+
+  const missingDefaults = DEFAULT_MENUS.filter((m) => !hrefs.has(m.href)).map((m, i) => ({
+    id: -(i + 1),
+    label: m.label,
+    href: m.href,
+    icon: m.icon,
+    groupLabel: m.groupLabel,
+    sortOrder: m.sortOrder,
+    visible: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }));
+
+  return [...visible, ...missingDefaults].sort(
+    (a, b) => a.sortOrder - b.sortOrder || a.id - b.id
+  );
 }
 
 export async function getAllMenuItems() {

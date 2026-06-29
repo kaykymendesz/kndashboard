@@ -36,6 +36,9 @@ try {
   console.log("Verificando migração v11...");
   execSync("npx tsx scripts/migrate-v11.ts", { stdio: "inherit", env: process.env });
 
+  console.log("Verificando migração v12...");
+  execSync("npx tsx scripts/migrate-v12.ts", { stdio: "inherit", env: process.env });
+
   console.log("Verificando seed inicial...");
   execSync("npx tsx scripts/seed-if-empty.ts", { stdio: "inherit", env: process.env });
 } catch (error) {
