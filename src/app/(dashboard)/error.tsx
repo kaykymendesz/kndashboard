@@ -14,7 +14,8 @@ export default function DashboardError({
   const isDbError =
     error.message.includes("relation") ||
     error.message.includes("does not exist") ||
-    error.message.includes("DATABASE_URL");
+    error.message.includes("DATABASE_URL") ||
+    error.message.includes("commercial_proposals");
 
   const isAuthError = error.message.includes("AUTH_SECRET");
 

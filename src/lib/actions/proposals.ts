@@ -22,6 +22,7 @@ import { createRevenue } from "@/lib/actions/revenues";
 import { createActivity } from "@/lib/actions/activities";
 import { desc, eq, like, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ensureProposalsSchema } from "@/lib/proposals/ensure-schema";
 
 async function currentUserLabel() {
   const session = await auth();
@@ -107,12 +108,14 @@ function revalidateProposalPaths() {
 }
 
 export async function getProposals() {
+  await ensureProposalsSchema();
   return db.query.commercialProposals.findMany({
     orderBy: [desc(commercialProposals.createdAt)],
   });
 }
 
 export async function getProposalById(id: number) {
+  await ensureProposalsSchema();
   return db.query.commercialProposals.findFirst({
     where: eq(commercialProposals.id, id),
   });
@@ -142,6 +145,7 @@ export async function getDefaultProposalTemplate() {
 }
 
 export async function createProposal(form: ProposalFormData) {
+  await ensureProposalsSchema();
   const createdBy = await currentUserLabel();
   const proposalNumber = await generateProposalNumber();
   const template = await getDefaultProposalTemplate();
@@ -371,6 +375,7 @@ export async function getProposalDocumentData(id: number) {
 }
 
 export async function getServiceCatalog() {
+  await ensureProposalsSchema();
   return db.query.proposalServiceCatalog.findMany({
     where: eq(proposalServiceCatalog.active, true),
     orderBy: [proposalServiceCatalog.sortOrder, proposalServiceCatalog.name],
@@ -378,6 +383,7 @@ export async function getServiceCatalog() {
 }
 
 export async function getGuaranteeCatalog() {
+  await ensureProposalsSchema();
   return db.query.proposalGuaranteeCatalog.findMany({
     where: eq(proposalGuaranteeCatalog.active, true),
     orderBy: [proposalGuaranteeCatalog.sortOrder, proposalGuaranteeCatalog.name],

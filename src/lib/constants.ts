@@ -13,7 +13,6 @@ import {
   Truck,
   TrendingUp,
   Activity,
-  FileText,
 } from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
@@ -30,7 +29,6 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Truck,
   TrendingUp,
   Activity,
-  FileText,
 };
 
 export const ICON_OPTIONS = Object.keys(ICON_MAP);
@@ -57,17 +55,16 @@ export const COMPANY_SHORT_NAME = "K&N Desenvolvimento de Software";
 export const DEFAULT_MENUS = [
   { label: "Visão Geral", href: "/gestao", icon: "LayoutDashboard", groupLabel: "Navegação", sortOrder: 1 },
   { label: "Financeiro", href: "/financeiro", icon: "PieChart", groupLabel: "Navegação", sortOrder: 2 },
-  { label: "Propostas", href: "/propostas", icon: "FileText", groupLabel: "Navegação", sortOrder: 3 },
-  { label: "Lucro", href: "/lucro", icon: "TrendingUp", groupLabel: "Navegação", sortOrder: 4 },
-  { label: "Gastos", href: "/gastos", icon: "Wallet", groupLabel: "Navegação", sortOrder: 5 },
-  { label: "Fornecedores", href: "/fornecedores", icon: "Truck", groupLabel: "Navegação", sortOrder: 6 },
-  { label: "Projeto Wikinaya", href: "/projetos/wikinaya", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 7 },
-  { label: "Projetos", href: "/projetos", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 8 },
-  { label: "Cronograma", href: "/cronograma", icon: "Calendar", groupLabel: "Navegação", sortOrder: 9 },
-  { label: "Clientes", href: "/clientes", icon: "Users", groupLabel: "Navegação", sortOrder: 10 },
-  { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 11 },
-  { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 12 },
-  { label: "Painel Operacional", href: "/operacional", icon: "Activity", groupLabel: "Sistema", sortOrder: 13 },
+  { label: "Lucro", href: "/lucro", icon: "TrendingUp", groupLabel: "Navegação", sortOrder: 3 },
+  { label: "Gastos", href: "/gastos", icon: "Wallet", groupLabel: "Navegação", sortOrder: 4 },
+  { label: "Fornecedores", href: "/fornecedores", icon: "Truck", groupLabel: "Navegação", sortOrder: 5 },
+  { label: "Projeto Wikinaya", href: "/projetos/wikinaya", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 6 },
+  { label: "Projetos", href: "/projetos", icon: "FolderKanban", groupLabel: "Projetos", sortOrder: 7 },
+  { label: "Cronograma", href: "/cronograma", icon: "Calendar", groupLabel: "Navegação", sortOrder: 8 },
+  { label: "Clientes", href: "/clientes", icon: "Users", groupLabel: "Navegação", sortOrder: 9 },
+  { label: "Dados da Empresa", href: "/projeto", icon: "Building2", groupLabel: "Empresa", sortOrder: 10 },
+  { label: "Configurações", href: "/configuracoes", icon: "Settings", groupLabel: "Sistema", sortOrder: 11 },
+  { label: "Painel Operacional", href: "/operacional", icon: "Activity", groupLabel: "Sistema", sortOrder: 12 },
 ] as const;
 
 export const DEFAULT_ATENDIMENTO_MENUS = [

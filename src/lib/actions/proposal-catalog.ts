@@ -9,6 +9,7 @@ import {
 import { slugify } from "@/lib/slug";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ensureProposalsSchema } from "@/lib/proposals/ensure-schema";
 
 function revalidateCatalog() {
   revalidatePath("/propostas");
@@ -17,6 +18,7 @@ function revalidateCatalog() {
 }
 
 export async function getServiceCatalogAll() {
+  await ensureProposalsSchema();
   return db.query.proposalServiceCatalog.findMany({
     orderBy: (s, { asc }) => [asc(s.sortOrder), asc(s.name)],
   });
@@ -62,6 +64,7 @@ export async function deleteCatalogService(id: number) {
 }
 
 export async function getGuaranteeCatalogAll() {
+  await ensureProposalsSchema();
   return db.query.proposalGuaranteeCatalog.findMany({
     orderBy: (g, { asc }) => [asc(g.sortOrder), asc(g.name)],
   });
@@ -99,6 +102,7 @@ export async function deleteCatalogGuarantee(id: number) {
 }
 
 export async function getProposalTemplates() {
+  await ensureProposalsSchema();
   return db.query.proposalTemplates.findMany({
     orderBy: (t, { desc }) => [desc(t.isDefault), desc(t.updatedAt)],
   });
