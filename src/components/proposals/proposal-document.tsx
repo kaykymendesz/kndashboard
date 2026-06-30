@@ -6,6 +6,7 @@ import {
   type ProposalLayoutConfig,
 } from "@/lib/proposals/layout-config";
 import type { ProposalDocumentData } from "@/lib/proposals/types";
+import { KnLogoMark } from "./kn-logo-mark";
 import "./proposal-document.css";
 
 function PersonIcon() {
@@ -70,8 +71,7 @@ function ProposalPageShell({
 
       <header className="kn-proposal-header">
         <div className="kn-proposal-logo">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={layout.logoUrl ?? "/kn-logo.svg"} alt="K&N Tecnologia" width={140} height={84} />
+          <KnLogoMark width={132} />
           <div className="kn-proposal-logo-text">{layout.subtitle ?? "Tecnologia"}</div>
         </div>
         <div className="kn-proposal-title-block">
@@ -91,9 +91,8 @@ function ProposalPageShell({
       <footer className="kn-proposal-footer-wrap">
         <div className="kn-proposal-contacts-label">Contatos</div>
         <div className="kn-proposal-contacts-box">
-          <div className="mini-logo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={layout.logoUrl ?? "/kn-logo.svg"} alt="" width={48} height={29} />
+          <div className="mini-logo" aria-hidden>
+            <KnLogoMark width={44} />
           </div>
           <div className="kn-proposal-contact">
             <div className="kn-proposal-contact-avatar">

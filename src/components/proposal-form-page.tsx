@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
-import { ProposalDocument } from "@/components/proposals/proposal-document";
+import { ProposalPreview } from "@/components/proposals/proposal-preview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -528,11 +528,7 @@ export function ProposalFormPage({
             <h3 className="font-semibold text-sm">Pré-visualização</h3>
             <Badge variant="outline">Layout oficial K&N</Badge>
           </div>
-          <div className="overflow-x-auto rounded-lg border bg-slate-100 p-4">
-            <div className="origin-top-left scale-[0.45] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.5] xl:scale-[0.55] 2xl:scale-[0.62]">
-              <ProposalDocument data={previewData} layoutJson={form.customLayout} />
-            </div>
-          </div>
+          <ProposalPreview data={previewData} layoutJson={form.customLayout} />
         </div>
       </div>
     </div>

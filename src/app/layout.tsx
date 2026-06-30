@@ -21,6 +21,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "K&N Dashboard | Gestão Empresarial",
   description: "Painel de gestão K&N Desenvolvimento de Software — Elaine & Kayky",
+  applicationName: "K&N Dashboard",
+  icons: {
+    icon: [{ url: "/icon", type: "image/png" }],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

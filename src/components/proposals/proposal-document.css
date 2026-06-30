@@ -16,12 +16,14 @@
   margin: 0 auto;
   background: #fff;
   color: var(--kn-text);
-  font-family: Montserrat, "Segoe UI", Inter, system-ui, sans-serif;
+  font-family: system-ui, "Segoe UI", Inter, sans-serif;
   font-size: 10.5pt;
   line-height: 1.55;
   box-sizing: border-box;
   overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
 }
 
 .kn-proposal-page *,
@@ -137,9 +139,9 @@
 .kn-proposal-bar-left {
   position: absolute;
   left: 0;
-  top: 22mm;
-  width: 5mm;
-  height: 195mm;
+  top: 24mm;
+  width: 3.5mm;
+  height: 175mm;
   background: var(--kn-gradient);
   z-index: 2;
   clip-path: polygon(0 0, 100% 4%, 100% 96%, 0 100%, 0 88%, 55% 84%, 0 80%, 0 20%, 55% 16%, 0 12%);
@@ -148,9 +150,9 @@
 .kn-proposal-bar-right {
   position: absolute;
   right: 0;
-  top: 145mm;
-  width: 4mm;
-  height: 95mm;
+  top: 150mm;
+  width: 3mm;
+  height: 80mm;
   background: var(--kn-gradient-h);
   z-index: 2;
   clip-path: polygon(100% 0, 0 6%, 0 94%, 100% 100%, 100% 55%, 35% 50%, 100% 45%);
@@ -234,8 +236,9 @@
 .kn-proposal-body {
   position: relative;
   z-index: 3;
-  padding: 4mm 20mm 8mm var(--kn-body-padding);
-  min-height: 168mm;
+  flex: 1;
+  padding: 3mm 18mm 6mm var(--kn-body-padding);
+  min-height: 120mm;
 }
 
 .kn-proposal-meta {
@@ -342,7 +345,9 @@
 .kn-proposal-footer-wrap {
   position: relative;
   z-index: 3;
-  padding: 0 16mm 10mm;
+  flex-shrink: 0;
+  padding: 0 14mm 8mm;
+  margin-top: auto;
 }
 
 .kn-proposal-contacts-label {
@@ -371,20 +376,22 @@
 
 .kn-proposal-contacts-box {
   display: grid;
-  grid-template-columns: auto 1.1fr 1.1fr auto;
-  align-items: center;
-  gap: 3mm;
-  padding: 4.5mm 5mm 4mm;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 2.5mm 3mm;
+  padding: 4mm 4mm 3.5mm;
   background: #fff;
   border: 1px solid #dbe3ef;
   border-radius: 10px;
-  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.08);
+  box-shadow: 0 2px 12px rgba(30, 41, 59, 0.06);
 }
 
-.kn-proposal-contacts-box .mini-logo img {
-  width: 12mm;
-  height: auto;
+.kn-proposal-contacts-box .mini-logo {
+  display: flex;
+  align-items: center;
+  padding-top: 1mm;
 }
+
 
 .kn-proposal-contact {
   display: flex;
@@ -438,10 +445,14 @@
   border-radius: 999px;
   font-size: 6pt;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #fff;
   background: var(--kn-gradient-h);
+}
+
+.kn-proposal-contact:nth-of-type(2) .badge {
+  background: linear-gradient(90deg, var(--kn-blue) 0%, #007bff 100%);
 }
 
 .kn-proposal-location {
