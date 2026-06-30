@@ -1,9 +1,11 @@
 import { ImageResponse } from "next/og";
+import { getKnLogoDataUrl } from "@/lib/brand/kn-logo";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
 
 export default function Icon() {
+  const logo = getKnLogoDataUrl();
   return new ImageResponse(
     (
       <div
@@ -13,15 +15,10 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%)",
-          borderRadius: 8,
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: 800,
-          fontFamily: "system-ui, sans-serif",
+          background: "#ffffff",
         }}
       >
-        KN
+        <img src={logo} width={28} height={28} alt="" style={{ objectFit: "contain" }} />
       </div>
     ),
     { ...size }

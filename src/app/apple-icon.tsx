@@ -1,9 +1,13 @@
 import { ImageResponse } from "next/og";
+import { getKnLogoDataUrl } from "@/lib/brand/kn-logo";
 
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 export default function AppleIcon() {
+  const logo = getKnLogoDataUrl();
+  const logoSize = 140;
+
   return new ImageResponse(
     (
       <div
@@ -11,28 +15,12 @@ export default function AppleIcon() {
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(145deg, #8e2de2 0%, #4a00e0 55%, #1e40af 100%)",
-          borderRadius: 36,
-          color: "#fff",
+          background: "#ffffff",
         }}
       >
-        <div style={{ fontSize: 56, fontWeight: 800, letterSpacing: -2, fontFamily: "system-ui" }}>
-          KN
-        </div>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: 4,
-            marginTop: 4,
-            opacity: 0.9,
-          }}
-        >
-          DASHBOARD
-        </div>
+        <img src={logo} width={logoSize} height={logoSize} alt="" style={{ objectFit: "contain" }} />
       </div>
     ),
     { ...size }

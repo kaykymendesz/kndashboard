@@ -18,7 +18,8 @@ export function KnLogo({ size = 44, className, showText = false, subtitle, title
         alt="K&N"
         width={size}
         height={size}
-        className="shrink-0 rounded-lg"
+        className="shrink-0 object-contain"
+        style={{ width: size, height: "auto", maxHeight: size }}
         priority
       />
       {showText && (

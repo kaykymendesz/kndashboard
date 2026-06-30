@@ -71,7 +71,7 @@ function ProposalPageShell({
 
       <header className="kn-proposal-header">
         <div className="kn-proposal-logo">
-          <KnLogoMark width={132} />
+          <KnLogoMark width={128} />
           <div className="kn-proposal-logo-text">{layout.subtitle ?? "Tecnologia"}</div>
         </div>
         <div className="kn-proposal-title-block">

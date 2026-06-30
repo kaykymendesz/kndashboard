@@ -1,11 +1,11 @@
 import { ImageResponse } from "next/og";
+import { getKnLogoDataUrl } from "@/lib/brand/kn-logo";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
-function iconMarkup(size: number) {
-  const fontSize = Math.round(size * 0.28);
-  const subSize = Math.round(size * 0.07);
-  const radius = Math.round(size * 0.2);
+function iconMarkup(size: number, logoSrc: string) {
+  const padding = Math.round(size * 0.1);
+  const logoSize = size - padding * 2;
 
   return (
     <div
@@ -13,22 +13,18 @@ function iconMarkup(size: number) {
         width: size,
         height: size,
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(145deg, #8e2de2 0%, #4a00e0 55%, #1e40af 100%)",
-        borderRadius: radius,
-        color: "#fff",
+        background: "#ffffff",
       }}
     >
-      <div style={{ fontSize, fontWeight: 800, letterSpacing: -2, lineHeight: 1 }}>
-        KN
-      </div>
-      {size >= 180 && (
-        <div style={{ fontSize: subSize, fontWeight: 600, letterSpacing: 3, marginTop: 4, opacity: 0.92 }}>
-          DASHBOARD
-        </div>
-      )}
+      <img
+        src={logoSrc}
+        width={logoSize}
+        height={logoSize}
+        alt=""
+        style={{ objectFit: "contain" }}
+      />
     </div>
   );
 }
@@ -39,8 +35,9 @@ export async function GET(
 ) {
   const { size: sizeParam } = await context.params;
   const size = Math.min(512, Math.max(32, parseInt(sizeParam, 10) || 192));
+  const logo = getKnLogoDataUrl();
 
-  return new ImageResponse(iconMarkup(size), {
+  return new ImageResponse(iconMarkup(size, logo), {
     width: size,
     height: size,
     headers: {

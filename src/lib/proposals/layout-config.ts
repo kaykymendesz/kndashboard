@@ -22,7 +22,7 @@ export type ProposalLayoutConfig = {
 };
 
 export const DEFAULT_LAYOUT_CONFIG: ProposalLayoutConfig = {
-  logoUrl: "/kn-logo.svg",
+  logoUrl: "/kn-logo.png",
   subtitle: "Tecnologia",
   titleLine1: "Proposta",
   titleLine2: "Comercial",
