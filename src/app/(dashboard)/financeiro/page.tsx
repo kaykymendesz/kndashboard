@@ -3,6 +3,11 @@ import { MoneyStat } from "@/components/stat-card";
 import { PageHeader } from "@/components/page-header";
 import { getFinancialSummary, getProfitSummary } from "@/lib/queries/dashboard";
 import { getVendorTotalsForFinanceiro } from "@/lib/actions/vendors";
+import { ensureErpV2Schema } from "@/lib/erp-v2/ensure-schema";
+import { getProfitDistribution } from "@/lib/erp-v2/financial";
+import { getAllReceivablePendingSummary, getPartnerPendingItems } from "@/lib/erp-v2/queries";
+import { PartnerPendingDialog } from "@/components/partner-pending-dialog";
+import { ReceivablesPendingCard } from "@/components/receivables-pending-card";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import { PieChart, Pencil, Wallet, Users, TrendingUp, Truck, ArrowRight } from "lucide-react";
@@ -19,11 +24,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export default async function FinanceiroPage() {
-  const [{ expenses, monthlyData, totals }, profit, vendorTotals] = await Promise.all([
+  await ensureErpV2Schema();
+  const [
+    { expenses, monthlyData, totals },
+    profit,
+    vendorTotals,
+    elaineItems,
+    kaykyItems,
+    receivableItems,
+    profitDist,
+  ] = await Promise.all([
     getFinancialSummary(),
     getProfitSummary(),
     getVendorTotalsForFinanceiro(),
+    getPartnerPendingItems("elaine"),
+    getPartnerPendingItems("kayky"),
+    getAllReceivablePendingSummary(),
+    getProfitDistribution(),
   ]);
+
+  const elainePartner = profitDist.partners.find((p) => p.slug === "elaine");
+  const kaykyPartner = profitDist.partners.find((p) => p.slug === "kayky");
+  const receivableTotal = receivableItems.reduce((s, r) => s + r.balance, 0);
 
   const byCategory = expenses.reduce<Record<string, number>>((acc, e) => {
     const cat = e.category || "Outros";
@@ -77,6 +99,15 @@ export default async function FinanceiroPage() {
 
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+          Contas a receber (ERP v2)
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+          <ReceivablesPendingCard total={receivableTotal} items={receivableItems} />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
           Totais de custos
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -126,14 +157,18 @@ export default async function FinanceiroPage() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid sm:grid-cols-2 gap-5">
-            <div className="kn-partner-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Elaine</p>
-              <p className="text-xl font-bold text-amber-600 mt-2 tabular-nums">{formatCurrency(totals.elainePending)}</p>
-            </div>
-            <div className="kn-partner-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Kayky</p>
-              <p className="text-xl font-bold text-amber-600 mt-2 tabular-nums">{formatCurrency(totals.kaykyPending)}</p>
-            </div>
+            <PartnerPendingDialog
+              partnerSlug="elaine"
+              partnerName={elainePartner?.name ?? "Elaine"}
+              total={totals.elainePending}
+              items={elaineItems}
+            />
+            <PartnerPendingDialog
+              partnerSlug="kayky"
+              partnerName={kaykyPartner?.name ?? "Kayky"}
+              total={totals.kaykyPending}
+              items={kaykyItems}
+            />
           </div>
         </CardContent>
       </Card>

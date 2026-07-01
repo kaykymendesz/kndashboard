@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getProposalById } from "@/lib/actions/proposals";
 import { proposalRowToDocument } from "@/lib/proposals/mapper";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { COMPANY_LEGAL_NAME } from "@/lib/constants";
+import { COMPANY_LEGAL_NAME, COMPANY_CNPJ } from "@/lib/constants";
 
 function escapeHtml(text: string) {
   return text
@@ -85,6 +85,7 @@ ${data.observations ? `<p><strong>Observações:</strong> ${escapeHtml(data.obse
   <p>Kayky Mendes — 11 99484-0027 | Elaine Anaya — 11 91369-3011</p>
   <p>${escapeHtml(data.city)}</p>
   <p>${escapeHtml(COMPANY_LEGAL_NAME.toUpperCase())}</p>
+  <p>CNPJ ${escapeHtml(COMPANY_CNPJ)}</p>
 </div>
 </body>
 </html>`;

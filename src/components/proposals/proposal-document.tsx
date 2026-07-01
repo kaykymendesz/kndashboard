@@ -5,6 +5,7 @@ import {
   parseLayoutConfig,
   type ProposalLayoutConfig,
 } from "@/lib/proposals/layout-config";
+import { COMPANY_CNPJ } from "@/lib/constants";
 import type { ProposalDocumentData } from "@/lib/proposals/types";
 import { KnLogoMark } from "./kn-logo-mark";
 import "./proposal-document.css";
@@ -128,6 +129,7 @@ function ProposalPageShell({
           </div>
         </div>
         <p className="kn-proposal-legal">{(layout.legalName ?? DEFAULT_LAYOUT_CONFIG.legalName!).toUpperCase()}</p>
+        <p className="kn-proposal-cnpj">CNPJ {layout.cnpj ?? DEFAULT_LAYOUT_CONFIG.cnpj ?? COMPANY_CNPJ}</p>
       </footer>
 
       {layout.showPageNumber !== false && (

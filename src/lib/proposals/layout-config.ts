@@ -1,3 +1,5 @@
+import { COMPANY_CNPJ } from "@/lib/constants";
+
 export type ProposalContactConfig = {
   name: string;
   role: string;
@@ -10,6 +12,7 @@ export type ProposalLayoutConfig = {
   titleLine1?: string;
   titleLine2?: string;
   legalName?: string;
+  cnpj?: string;
   city?: string;
   contact1?: ProposalContactConfig;
   contact2?: ProposalContactConfig;
@@ -27,6 +30,7 @@ export const DEFAULT_LAYOUT_CONFIG: ProposalLayoutConfig = {
   titleLine1: "Proposta",
   titleLine2: "Comercial",
   legalName: "K & N DESENVOLVIMENTO DE SOFTWARES LTDA",
+  cnpj: COMPANY_CNPJ,
   city: "São Paulo - SP",
   contact1: {
     name: "Kayky Mendes",

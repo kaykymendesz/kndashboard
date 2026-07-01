@@ -14,6 +14,8 @@ const MIGRATIONS = [
   "migrate-v10.ts",
   "migrate-v11.ts",
   "migrate-v12.ts",
+  "migrate-v13.ts",
+  "migrate-v14.ts",
   "seed-if-empty.ts",
 ];
 

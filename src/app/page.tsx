@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { KnLogo } from "@/components/kn-logo";
 import { Building2, LayoutDashboard, ArrowRight, Activity } from "lucide-react";
-import { COMPANY_LEGAL_NAME } from "@/lib/constants";
+import { COMPANY_LEGAL_NAME, COMPANY_CNPJ } from "@/lib/constants";
 
 export default function PortalPage() {
   return (
@@ -68,6 +68,7 @@ export default function PortalPage() {
           <Building2 className="h-3.5 w-3.5" />
           <span>© {new Date().getFullYear()} K&N — Todos os direitos reservados</span>
         </div>
+        <p className="text-white/35">CNPJ {COMPANY_CNPJ}</p>
       </footer>
     </div>
   );

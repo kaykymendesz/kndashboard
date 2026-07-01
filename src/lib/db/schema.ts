@@ -18,6 +18,11 @@ export const projects = pgTable("projects", {
   projectType: varchar("project_type", { length: 30 }).default("interno"),
   clientId: integer("client_id").references(() => clients.id),
   contractedRevenue: numeric("contracted_revenue", { precision: 12, scale: 2 }),
+  proposalId: integer("proposal_id"),
+  suggestedPrice: numeric("suggested_price", { precision: 12, scale: 2 }),
+  negotiatedPrice: numeric("negotiated_price", { precision: 12, scale: 2 }),
+  discountAmount: numeric("discount_amount", { precision: 12, scale: 2 }),
+  discountReason: text("discount_reason").default(""),
   color: varchar("color", { length: 20 }).default("#1e3a5f"),
   notes: text("notes").default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -556,3 +561,205 @@ export function lifecycleStatusVariant(status?: string | null): "default" | "sec
   if (status === "Cotação" || status === "Prospecção" || status === "Levantamento") return "outline";
   return "secondary";
 }
+
+// ─── ERP v2.0 — Catálogos e composição financeira ───────────────────────────
+
+export const CLIENT_STATUSES = [
+  "Cliente ativo",
+  "Cliente inativo",
+  "Cliente potencial",
+  "Cliente encerrado",
+] as const;
+
+export const CATALOG_PERIODICITIES = [
+  "Pagamento único",
+  "Mensal",
+  "Trimestral",
+  "Semestral",
+  "Anual",
+] as const;
+
+export const COMPOSITION_LINE_TYPES = ["infraestrutura", "mao_obra", "custo_exclusivo"] as const;
+export type CompositionLineType = (typeof COMPOSITION_LINE_TYPES)[number];
+
+export const FINANCIAL_ENTRY_TYPES = ["receber", "pagar"] as const;
+export type FinancialEntryType = (typeof FINANCIAL_ENTRY_TYPES)[number];
+
+export const FINANCIAL_ENTRY_STATUSES = ["Pendente", "Parcial", "Quitado", "Cancelado"] as const;
+
+export const FINANCIAL_ORIGIN_TYPES = [
+  "proposta",
+  "projeto",
+  "gasto",
+  "cronograma",
+  "reembolso",
+  "distribuicao",
+  "mensalidade",
+  "manual",
+] as const;
+
+export const FINANCIAL_COST_TYPES = [
+  "Infraestrutura",
+  "Mão de Obra",
+  "Custo Exclusivo",
+  "Administrativo",
+  "Reembolso",
+  "Investimento",
+] as const;
+
+export const catalogInfrastructure = pgTable("catalog_infrastructure", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  vendor: varchar("vendor", { length: 200 }).default(""),
+  description: text("description").default(""),
+  periodicity: varchar("periodicity", { length: 50 }).default("Mensal"),
+  companyCost: numeric("company_cost", { precision: 12, scale: 2 }).default("0"),
+  compositionValue: numeric("composition_value", { precision: 12, scale: 2 }).default("0"),
+  category: varchar("category", { length: 100 }).default("Infraestrutura"),
+  notes: text("notes").default(""),
+  active: boolean("active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const catalogLabor = pgTable("catalog_labor", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description").default(""),
+  defaultValue: numeric("default_value", { precision: 12, scale: 2 }).default("0"),
+  category: varchar("category", { length: 100 }).default("Mão de Obra"),
+  notes: text("notes").default(""),
+  active: boolean("active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const catalogExclusiveCosts = pgTable("catalog_exclusive_costs", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description").default(""),
+  defaultValue: numeric("default_value", { precision: 12, scale: 2 }).default("0"),
+  category: varchar("category", { length: 100 }).default("Custo Exclusivo"),
+  notes: text("notes").default(""),
+  active: boolean("active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const companySettings = pgTable("company_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 120 }).notNull().unique(),
+  value: text("value").notNull().default("{}"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const projectCompositions = pgTable("project_compositions", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" })
+    .unique(),
+  proposalId: integer("proposal_id").references(() => commercialProposals.id),
+  infraTotal: numeric("infra_total", { precision: 12, scale: 2 }).default("0"),
+  laborTotal: numeric("labor_total", { precision: 12, scale: 2 }).default("0"),
+  exclusiveTotal: numeric("exclusive_total", { precision: 12, scale: 2 }).default("0"),
+  suggestedPrice: numeric("suggested_price", { precision: 12, scale: 2 }).default("0"),
+  negotiatedPrice: numeric("negotiated_price", { precision: 12, scale: 2 }).default("0"),
+  discountAmount: numeric("discount_amount", { precision: 12, scale: 2 }).default("0"),
+  discountPercent: numeric("discount_percent", { precision: 8, scale: 4 }).default("0"),
+  discountReason: text("discount_reason").default(""),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const projectCompositionLines = pgTable("project_composition_lines", {
+  id: serial("id").primaryKey(),
+  compositionId: integer("composition_id")
+    .notNull()
+    .references(() => projectCompositions.id, { onDelete: "cascade" }),
+  lineType: varchar("line_type", { length: 30 }).notNull(),
+  catalogId: integer("catalog_id"),
+  label: varchar("label", { length: 300 }).notNull(),
+  compositionValue: numeric("composition_value", { precision: 12, scale: 2 }).notNull().default("0"),
+  companyCost: numeric("company_cost", { precision: 12, scale: 2 }),
+  notes: text("notes").default(""),
+  sortOrder: integer("sort_order").default(0),
+});
+
+/** Ledger unificado — contas a receber/pagar com rastreabilidade (ERP v2) */
+export const financialEntries = pgTable("financial_entries", {
+  id: serial("id").primaryKey(),
+  entryType: varchar("entry_type", { length: 20 }).notNull(),
+  originType: varchar("origin_type", { length: 30 }).notNull().default("manual"),
+  originId: integer("origin_id"),
+  description: varchar("description", { length: 400 }).notNull(),
+  originalAmount: numeric("original_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+  paidAmount: numeric("paid_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+  status: varchar("status", { length: 30 }).default("Pendente"),
+  dueDate: timestamp("due_date"),
+  clientId: integer("client_id").references(() => clients.id),
+  projectId: integer("project_id").references(() => projects.id),
+  vendorId: integer("vendor_id").references(() => vendors.id),
+  category: varchar("category", { length: 100 }).default(""),
+  costType: varchar("cost_type", { length: 50 }).default(""),
+  financialResponsible: varchar("financial_responsible", { length: 100 }).default(""),
+  paymentMethod: varchar("payment_method", { length: 50 }).default(""),
+  isReimbursable: boolean("is_reimbursable").default(false),
+  recurrence: varchar("recurrence", { length: 50 }).default("Pagamento único"),
+  notes: text("notes").default(""),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const financialEntryPayments = pgTable("financial_entry_payments", {
+  id: serial("id").primaryKey(),
+  entryId: integer("entry_id")
+    .notNull()
+    .references(() => financialEntries.id, { onDelete: "cascade" }),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  paymentDate: timestamp("payment_date").defaultNow().notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }).default(""),
+  notes: text("notes").default(""),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const financialEntryHistory = pgTable("financial_entry_history", {
+  id: serial("id").primaryKey(),
+  entryId: integer("entry_id")
+    .notNull()
+    .references(() => financialEntries.id, { onDelete: "cascade" }),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }),
+  snapshot: text("snapshot").default("{}"),
+  note: text("note").default(""),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type CatalogInfrastructure = typeof catalogInfrastructure.$inferSelect;
+export type CatalogLabor = typeof catalogLabor.$inferSelect;
+export type CatalogExclusiveCost = typeof catalogExclusiveCosts.$inferSelect;
+export type CompanySetting = typeof companySettings.$inferSelect;
+export type ProjectComposition = typeof projectCompositions.$inferSelect;
+export type ProjectCompositionLine = typeof projectCompositionLines.$inferSelect;
+export type FinancialEntry = typeof financialEntries.$inferSelect;
+export type FinancialEntryPayment = typeof financialEntryPayments.$inferSelect;
+export type FinancialEntryHistory = typeof financialEntryHistory.$inferSelect;
+
+export const expensePartnerPayments = pgTable("expense_partner_payments", {
+  id: serial("id").primaryKey(),
+  expenseId: integer("expense_id")
+    .notNull()
+    .references(() => expenses.id, { onDelete: "cascade" }),
+  partnerSlug: varchar("partner_slug", { length: 50 }).notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  notes: text("notes").default(""),
+  createdBy: varchar("created_by", { length: 200 }).default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ExpensePartnerPayment = typeof expensePartnerPayments.$inferSelect;

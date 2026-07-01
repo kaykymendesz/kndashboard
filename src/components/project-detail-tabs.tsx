@@ -17,10 +17,16 @@ import {
 import { ActivitiesManager } from "@/components/activities-manager";
 import { ProjectInfoEditor } from "@/components/project-info-editor";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { Activity, Client, Expense, Project, ProjectInfo } from "@/lib/db/schema";
+import type { Activity, Client, Expense, FinancialEntry, Project, ProjectInfo } from "@/lib/db/schema";
 import type { ProjectFinancialSummary } from "@/lib/project-finance";
 import { ProjectStatusSelect } from "@/components/project-status-select";
+import { ProjectCompositionPanel } from "@/components/project-composition-panel";
 import { FolderKanban, ArrowLeft, Wallet, Calendar } from "lucide-react";
+
+type CompositionData = {
+  composition: import("@/lib/db/schema").ProjectComposition;
+  lines: import("@/lib/db/schema").ProjectCompositionLine[];
+} | null;
 
 type Props = {
   project: Project;
@@ -29,6 +35,8 @@ type Props = {
   expenses: Expense[];
   totalSpent: number;
   finance: ProjectFinancialSummary | null;
+  compositionData?: CompositionData;
+  receivables?: FinancialEntry[];
   activities: Activity[];
   statusOptions: string[];
   priorityOptions: string[];
@@ -42,6 +50,8 @@ export function ProjectDetailTabs({
   expenses,
   totalSpent,
   finance,
+  compositionData,
+  receivables = [],
   activities,
   statusOptions,
   priorityOptions,
@@ -50,8 +60,10 @@ export function ProjectDetailTabs({
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "financeiro";
   const validTabs = showActivities
-    ? ["financeiro", "detalhes", "gastos", "atividades"]
-    : ["financeiro", "detalhes", "gastos"];
+    ? ["financeiro", "composicao", "detalhes", "gastos", "atividades"]
+    : compositionData
+      ? ["financeiro", "composicao", "detalhes", "gastos"]
+      : ["financeiro", "detalhes", "gastos"];
   const initialTab = validTabs.includes(defaultTab) ? defaultTab : "financeiro";
   const isClientProject = project.projectType === "cliente";
 
@@ -109,6 +121,9 @@ export function ProjectDetailTabs({
       <Tabs defaultValue={initialTab} className="space-y-6">
         <TabsList className="bg-muted/50 flex-wrap h-auto">
           <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+          {compositionData && (
+            <TabsTrigger value="composicao">Composição financeira</TabsTrigger>
+          )}
           <TabsTrigger value="detalhes">Detalhamento</TabsTrigger>
           <TabsTrigger value="gastos">Gastos ({expenses.length})</TabsTrigger>
           {showActivities && (
@@ -130,6 +145,12 @@ export function ProjectDetailTabs({
                   <CardContent className="p-5">
                     <p className="text-xs uppercase tracking-wider text-muted-foreground">Recebido</p>
                     <p className="text-2xl font-bold tabular-nums mt-2 text-emerald-600">{formatCurrency(finance?.receivedRevenue ?? 0)}</p>
+                  </CardContent>
+                </Card>
+                <Card className="kn-card">
+                  <CardContent className="p-5">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Receita pendente</p>
+                    <p className="text-2xl font-bold tabular-nums mt-2 text-amber-600">{formatCurrency(finance?.pendingRevenue ?? 0)}</p>
                   </CardContent>
                 </Card>
                 <Card className="kn-card">
@@ -178,6 +199,16 @@ export function ProjectDetailTabs({
             )}
           </div>
         </TabsContent>
+
+        {compositionData && (
+          <TabsContent value="composicao">
+            <ProjectCompositionPanel
+              composition={compositionData.composition}
+              lines={compositionData.lines}
+              receivables={receivables}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="detalhes" className="space-y-4">
           <ProjectInfoEditor projectId={project.id} items={details} />

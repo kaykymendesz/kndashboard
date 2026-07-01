@@ -19,9 +19,25 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OverviewExpenseSections } from "@/components/overview-expense-sections";
 import { PendingReimbursementsCard } from "@/components/pending-reimbursements-card";
+import { PartnerPendingDialog } from "@/components/partner-pending-dialog";
+import { ReceivablesPendingCard } from "@/components/receivables-pending-card";
+import { ensureErpV2Schema } from "@/lib/erp-v2/ensure-schema";
+import { getProfitDistribution } from "@/lib/erp-v2/financial";
+import { getAllReceivablePendingSummary, getPartnerPendingItems } from "@/lib/erp-v2/queries";
 
 export default async function GestaoHomePage() {
-  const stats = await getDashboardStats();
+  await ensureErpV2Schema();
+  const [stats, elaineItems, kaykyItems, receivableItems, profitDist] = await Promise.all([
+    getDashboardStats(),
+    getPartnerPendingItems("elaine"),
+    getPartnerPendingItems("kayky"),
+    getAllReceivablePendingSummary(),
+    getProfitDistribution(),
+  ]);
+
+  const elainePartner = profitDist.partners.find((p) => p.slug === "elaine");
+  const kaykyPartner = profitDist.partners.find((p) => p.slug === "kayky");
+  const receivableTotal = receivableItems.reduce((s, r) => s + r.balance, 0);
 
   return (
     <div className="kn-page">
@@ -38,12 +54,22 @@ export default async function GestaoHomePage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MoneyStat title="Total investido" amount={stats.totalInvested} icon={Wallet} />
           <MoneyStat title="Total pago" amount={stats.totalPaid} icon={TrendingUp} accent="success" />
-          <MoneyStat title="Pendente Elaine" amount={stats.elainePending} icon={AlertTriangle} accent="warning" />
-          <MoneyStat title="Pendente Kayky" amount={stats.kaykyPending} icon={AlertTriangle} accent="warning" />
+          <PartnerPendingDialog
+            partnerSlug="elaine"
+            partnerName={elainePartner?.name ?? "Elaine Rebelo"}
+            total={stats.elainePending}
+            items={elaineItems}
+          />
+          <PartnerPendingDialog
+            partnerSlug="kayky"
+            partnerName={kaykyPartner?.name ?? "Kayky Mendes"}
+            total={stats.kaykyPending}
+            items={kaykyItems}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mt-4">
           <MoneyStat title="Receita recebida" amount={stats.revenueReceived} icon={TrendingUp} accent="success" />
-          <MoneyStat title="Receita a receber" amount={stats.revenueToReceive} icon={Calendar} />
+          <ReceivablesPendingCard total={receivableTotal} items={receivableItems} />
           <MoneyStat
             title="Lucro total"
             amount={stats.totalProfit}
@@ -144,22 +170,18 @@ export default async function GestaoHomePage() {
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid sm:grid-cols-2 gap-5">
-            <div className="kn-partner-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Elaine Rebelo Anaya</p>
-              <p className="text-2xl font-bold mt-2 tabular-nums text-primary">{formatCurrency(stats.elaineInvested)}</p>
-              <Separator className="my-3" />
-              <p className="text-sm text-amber-600 font-medium">
-                Pendente: {formatCurrency(stats.elainePending)}
-              </p>
-            </div>
-            <div className="kn-partner-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Kayky Medes da Silva</p>
-              <p className="text-2xl font-bold mt-2 tabular-nums text-primary">{formatCurrency(stats.kaykyInvested)}</p>
-              <Separator className="my-3" />
-              <p className="text-sm text-amber-600 font-medium">
-                Pendente: {formatCurrency(stats.kaykyPending)}
-              </p>
-            </div>
+            <PartnerPendingDialog
+              partnerSlug="elaine"
+              partnerName={elainePartner?.name ?? "Elaine Rebelo Anaya"}
+              total={stats.elainePending}
+              items={elaineItems}
+            />
+            <PartnerPendingDialog
+              partnerSlug="kayky"
+              partnerName={kaykyPartner?.name ?? "Kayky Medes da Silva"}
+              total={stats.kaykyPending}
+              items={kaykyItems}
+            />
           </div>
         </CardContent>
       </Card>

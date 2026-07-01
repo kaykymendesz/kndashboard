@@ -3,6 +3,7 @@ import { getDatabaseUrl } from "@/lib/db/env";
 import type { MonitorCheckResult, MonitorServiceConfig, MonitorStatus } from "./types";
 import { buildDiagnosis } from "./diagnosis";
 import { checkGreenWhatsApp } from "./green-check";
+import { checkGestaoSocApi } from "./soc-check";
 
 function resolveAppOrigin(): string {
   const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
@@ -134,6 +135,10 @@ function deriveStatus(
 export async function runServiceCheck(service: MonitorServiceConfig): Promise<MonitorCheckResult> {
   if (service.checkKind === "green_api") {
     return checkGreenWhatsApp(service);
+  }
+
+  if (service.checkKind === "gestao_soc_api") {
+    return checkGestaoSocApi(service);
   }
 
   const checkedAt = new Date().toISOString();

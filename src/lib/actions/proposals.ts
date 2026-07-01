@@ -18,11 +18,16 @@ import { proposalToForm, formToDocumentData } from "@/lib/proposals/mapper";
 import type { ProposalFormData } from "@/lib/proposals/types";
 import { createClient } from "@/lib/actions/clients";
 import { createClientProject } from "@/lib/actions/projects";
-import { createRevenue } from "@/lib/actions/revenues";
 import { createActivity } from "@/lib/actions/activities";
 import { desc, eq, like, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { ensureProposalsSchema } from "@/lib/proposals/ensure-schema";
+import { ensureErpV2Schema } from "@/lib/erp-v2/ensure-schema";
+import {
+  buildCompositionFromProposal,
+  buildInstallmentsFromProposal,
+} from "@/lib/erp-v2/proposal-conversion";
+import { createReceivableEntry, saveProjectComposition } from "@/lib/erp-v2/actions";
 
 async function currentUserLabel() {
   const session = await auth();
@@ -235,11 +240,17 @@ const DEFAULT_PROJECT_TASKS = [
 ];
 
 export async function convertProposalToProject(proposalId: number) {
+  await ensureProposalsSchema();
+  await ensureErpV2Schema();
+
   const proposal = await getProposalById(proposalId);
   if (!proposal) throw new Error("Proposta não encontrada");
   if (proposal.projectId) {
     return { projectId: proposal.projectId, alreadyExists: true };
   }
+
+  const createdBy = await currentUserLabel();
+  const compositionDraft = buildCompositionFromProposal(proposal);
 
   let clientId = proposal.clientId;
   if (!clientId) {
@@ -249,7 +260,7 @@ export async function convertProposalToProject(proposalId: number) {
       company: proposal.clientCompany ?? "",
       email: proposal.clientEmail ?? "",
       phone: proposal.clientPhone ?? "",
-      contractValue: String(proposal.totalValue ?? 0),
+      contractValue: String(compositionDraft.negotiatedPrice),
       notes: `Criado a partir da proposta ${proposal.proposalNumber}`,
     });
     const createdClients = await db.query.clients.findMany({
@@ -268,59 +279,36 @@ export async function convertProposalToProject(proposalId: number) {
     name: proposal.projectName || `Projeto ${proposal.proposalNumber}`,
     status: "Em desenvolvimento",
     description: proposal.description ?? proposal.projectObjective ?? "",
-    contractedRevenue: String(proposal.totalValue ?? 0),
+    contractedRevenue: String(compositionDraft.negotiatedPrice),
     notes: `Origem: proposta ${proposal.proposalNumber}`,
   });
 
-  const total = parseNumber(proposal.totalValue);
-  const down = parseNumber(proposal.downPayment);
-  const installments = proposal.installments ?? 1;
+  await saveProjectComposition({
+    projectId: project.id,
+    proposalId: proposal.id,
+    lines: compositionDraft.lines,
+    suggestedPrice: compositionDraft.suggestedPrice,
+    negotiatedPrice: compositionDraft.negotiatedPrice,
+    discountAmount: compositionDraft.discountAmount,
+    discountPercent: compositionDraft.discountPercent,
+    discountReason: compositionDraft.discountReason,
+    createdBy,
+  });
 
-  if (down > 0) {
-    await createRevenue({
-      description: `Entrada — ${proposal.proposalNumber}`,
-      amount: String(down),
-      status: "Pendente",
-      category: "Desenvolvimento",
+  const installments = buildInstallmentsFromProposal(proposal);
+  for (const item of installments) {
+    await createReceivableEntry({
+      description: item.description,
+      amount: item.amount,
       projectId: project.id,
       clientId,
+      originType: "proposta",
+      originId: proposal.id,
+      category: item.category,
+      costType: item.category === "Mensalidade" ? "Infraestrutura" : "Mão de Obra",
+      recurrence: item.recurrence,
       notes: proposal.paymentNotes ?? "",
-    });
-  }
-
-  const installmentValue = parseNumber(proposal.installmentValue);
-  if (installments > 1 && installmentValue > 0) {
-    for (let i = 1; i <= installments; i++) {
-      await createRevenue({
-        description: `Parcela ${i}/${installments} — ${proposal.proposalNumber}`,
-        amount: String(installmentValue),
-        status: "Pendente",
-        category: "Desenvolvimento",
-        projectId: project.id,
-        clientId,
-      });
-    }
-  } else if (total > down) {
-    await createRevenue({
-      description: `Projeto — ${proposal.proposalNumber}`,
-      amount: String(total - down),
-      status: "Pendente",
-      category: "Desenvolvimento",
-      projectId: project.id,
-      clientId,
-    });
-  }
-
-  const monthly = parseNumber(proposal.monthlyValue);
-  if (monthly > 0) {
-    await createRevenue({
-      description: `Mensalidade — ${proposal.projectName}`,
-      amount: String(monthly),
-      status: "Pendente",
-      category: "Mensalidade",
-      projectId: project.id,
-      clientId,
-      notes: "Recorrente",
+      createdBy,
     });
   }
 

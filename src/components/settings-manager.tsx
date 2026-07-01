@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Settings, Menu, Tags, FolderKanban, GitBranch } from "lucide-react";
+import { Plus, Pencil, Trash2, Settings, Menu, Tags, FolderKanban, GitBranch, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import { deleteProject } from "@/lib/actions/projects";
 import type { MenuItem, Classification, Project } from "@/lib/db/schema";
 import { CLASSIFICATION_TYPES, ICON_OPTIONS, getIcon } from "@/lib/constants";
 import { ProcessFlowsTab } from "@/components/process-flows-tab";
+import { CompanyErpSettingsTab } from "@/components/company-erp-settings-tab";
 import { CadastroPanel } from "@/components/ui/cadastro-panel";
 import type { ProcessFlow, ProcessStep } from "@/lib/db/schema";
 
@@ -37,9 +38,10 @@ type Props = {
   projects: Project[];
   flowsWithSteps: { flow: ProcessFlow; steps: ProcessStep[] }[];
   processCategories: string[];
+  erpSettings?: Awaited<ReturnType<typeof import("@/lib/actions/company-settings").getErpCompanySettings>>;
 };
 
-export function SettingsManager({ menus, classifications, projects, flowsWithSteps, processCategories }: Props) {
+export function SettingsManager({ menus, classifications, projects, flowsWithSteps, processCategories, erpSettings }: Props) {
   return (
     <div className="kn-page">
       <PageHeader
@@ -54,6 +56,9 @@ export function SettingsManager({ menus, classifications, projects, flowsWithSte
           <TabsTrigger value="classifications" className="gap-2"><Tags className="h-4 w-4" />Classificações</TabsTrigger>
           <TabsTrigger value="projects" className="gap-2"><FolderKanban className="h-4 w-4" />Projetos</TabsTrigger>
           <TabsTrigger value="flows" className="gap-2"><GitBranch className="h-4 w-4" />Fluxos de processo</TabsTrigger>
+          {erpSettings && (
+            <TabsTrigger value="erp" className="gap-2"><Building2 className="h-4 w-4" />Empresa / ERP</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="menus">
@@ -68,6 +73,15 @@ export function SettingsManager({ menus, classifications, projects, flowsWithSte
         <TabsContent value="flows">
           <ProcessFlowsTab flowsWithSteps={flowsWithSteps} categoryOptions={processCategories} />
         </TabsContent>
+        {erpSettings && (
+          <TabsContent value="erp">
+            <CompanyErpSettingsTab
+              profitDistribution={erpSettings.profitDistribution}
+              companyProfile={erpSettings.companyProfile}
+              catalogs={erpSettings.catalogs}
+            />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

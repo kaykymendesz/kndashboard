@@ -16,7 +16,7 @@ export type MonitorPriority = "critica" | "alta" | "media" | "baixa";
 export type MonitorStatus = "online" | "instavel" | "offline" | "nao_configurado";
 
 /** Como o servidor testa o serviço (somente no back-end). */
-export type MonitorCheckKind = "http" | "internal_db" | "green_api";
+export type MonitorCheckKind = "http" | "internal_db" | "green_api" | "gestao_soc_api";
 
 export interface MonitorServiceConfig {
   /** Identificador único — use kebab-case, ex: gestao-saude */

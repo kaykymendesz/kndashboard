@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
-import { clients, expenses, projects, revenues } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { clients, expenses, financialEntries, projectCompositions, projects, revenues } from "@/lib/db/schema";
+import { and, eq, sql } from "drizzle-orm";
+import { entryBalance } from "@/lib/erp-v2/composition";
 
 function sumExpenses(rows: { totalValue?: string | null; hasCost?: boolean | null }[]) {
   return rows
@@ -49,15 +50,46 @@ export async function getProjectFinancialSummary(projectId: number): Promise<Pro
     projectExpenses.filter((e) => e.purchaseDate && new Date(e.purchaseDate) >= monthStart)
   );
 
-  const receivedRevenue = projectRevenues
-    .filter((r) => r.status === "Recebido")
-    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  const receivableEntries = await db.query.financialEntries.findMany({
+    where: and(
+      eq(financialEntries.projectId, projectId),
+      eq(financialEntries.entryType, "receber")
+    ),
+  });
 
-  const pendingRevenue = projectRevenues
-    .filter((r) => r.status === "Pendente")
-    .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  const useLedger = receivableEntries.length > 0;
 
-  const contractedRevenue = Number(project.contractedRevenue ?? 0);
+  let receivedRevenue = 0;
+  let pendingRevenue = 0;
+
+  if (useLedger) {
+    for (const e of receivableEntries) {
+      if (e.status === "Cancelado") continue;
+      const original = Number(e.originalAmount ?? 0);
+      const paid = Number(e.paidAmount ?? 0);
+      receivedRevenue += paid;
+      pendingRevenue += entryBalance(original, paid);
+    }
+  } else {
+    receivedRevenue = projectRevenues
+      .filter((r) => r.status === "Recebido")
+      .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+
+    pendingRevenue = projectRevenues
+      .filter((r) => r.status === "Pendente")
+      .reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  }
+
+  const [composition] = await db
+    .select()
+    .from(projectCompositions)
+    .where(eq(projectCompositions.projectId, projectId))
+    .limit(1);
+
+  const contractedRevenue =
+    Number(project.negotiatedPrice ?? 0) ||
+    Number(composition?.negotiatedPrice ?? 0) ||
+    Number(project.contractedRevenue ?? 0);
   const grossProfit = contractedRevenue > 0 ? contractedRevenue - totalExpenses : 0;
   const marginPercent =
     contractedRevenue > 0 ? Math.round((grossProfit / contractedRevenue) * 1000) / 10 : null;

@@ -5,6 +5,7 @@
  *
  * Monitoramento 24h: CRON_SECRET na Vercel → /api/cron/monitor (1x/dia no Hobby)
  * Green API (Dr Zuki): MONITOR_GREEN_* na Vercel (somente leitura, server-side)
+ * SOC (Gestão Saúde): MONITOR_GESTAO_CRON_SECRET = mesmo CRON_SECRET do Gestão Saúde
  *
  * NÃO coloque senhas, tokens ou chaves de API neste arquivo.
  */
@@ -100,15 +101,19 @@ export const MONITOR_SERVICES: MonitorServiceConfig[] = [
     enabled: true,
   },
   {
-    id: "soc-integracao-futura",
-    name: "SOC — integração API",
-    type: "integracao",
+    id: "soc-integracao-gestao",
+    name: "SOC — integração API (Gestão)",
+    type: "api",
     environment: "producao",
-    description: "sistema.soc.com.br — após termo de confiabilidade.",
+    description:
+      "Webservices SOC via Gestão Saúde: Licença Médica (1084), PDF no SOCGED (611) e Exporta Dados. Não monitora tela 726 (INSS).",
     projectUrl: "https://sistema.soc.com.br",
-    priority: "alta",
+    checkKind: "gestao_soc_api",
+    priority: "critica",
     responsible: "Kayky",
     enabled: true,
+    slowThresholdMs: 8000,
+    timeoutMs: 60000,
   },
 ];
 

@@ -11,12 +11,21 @@ export function buildDiagnosis(
   const when = new Date(checkedAt).toLocaleString("pt-BR");
 
   if (status === "nao_configurado") {
+    const isSoc = service.checkKind === "gestao_soc_api";
     return {
-      plainSummary: `${service.name} ainda não tem URL de teste configurada. Isso é normal para integrações futuras (ex: SOC após o termo).`,
-      suggestedSteps: [
-        "Quando a integração estiver pronta, adicione healthCheckUrl em src/lib/monitor/services.config.ts",
-        "Faça deploy e clique em Atualizar no painel",
-      ],
+      plainSummary: isSoc
+        ? `${service.name}: configure MONITOR_GESTAO_CRON_SECRET na Vercel do K&N Dashboard (mesmo valor de CRON_SECRET do Gestão Saúde).`
+        : `${service.name} ainda não tem URL de teste configurada.`,
+      suggestedSteps: isSoc
+        ? [
+            "Vercel → kndashboard → Settings → Environment Variables",
+            "Adicione MONITOR_GESTAO_CRON_SECRET com o mesmo valor de CRON_SECRET do projeto gestao-sa-de",
+            "Faça redeploy e clique em Atualizar no painel",
+          ]
+        : [
+            "Quando a integração estiver pronta, adicione healthCheckUrl em src/lib/monitor/services.config.ts",
+            "Faça deploy e clique em Atualizar no painel",
+          ],
       technicalDetail: technicalDetail ?? null,
     };
   }
@@ -98,6 +107,16 @@ function getStepsForService(
     return [
       "Green API: console.green-api.com → instância authorized?",
       "Painel Dr Zuki → Ativar webhook",
+      ...base,
+    ];
+  }
+
+  if (service.checkKind === "gestao_soc_api") {
+    return [
+      "Gestão Saúde → Atestados → verifique último envio SOC",
+      "SOC tela 337: WS Licença Médica + Upload de Arquivos habilitados para o usuário de integração",
+      "Confirme variáveis SOC_* na Vercel do Gestão Saúde (empresa RZ, sem modo teste)",
+      "Vercel gestao-sa-de → Logs → filtre erros [soc:]",
       ...base,
     ];
   }

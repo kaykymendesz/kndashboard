@@ -52,6 +52,7 @@ export const CLASSIFICATION_TYPES = [
 export type ClassificationType = (typeof CLASSIFICATION_TYPES)[number]["value"];
 
 export const COMPANY_LEGAL_NAME = "K&N Desenvolvimento de Software LTDA";
+export const COMPANY_CNPJ = "67.529.522/0001-56";
 export const COMPANY_SHORT_NAME = "K&N Desenvolvimento de Software";
 
 export const DEFAULT_MENUS = [

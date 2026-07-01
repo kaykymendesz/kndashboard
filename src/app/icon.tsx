@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getKnLogoDataUrl } from "@/lib/brand/kn-logo";
+import { getKnLogoDataUrl } from "@/lib/brand/kn-logo-server";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";

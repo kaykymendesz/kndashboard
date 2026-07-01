@@ -182,7 +182,7 @@ export function ProposalFormPage({
   };
 
   const handleConvert = () => {
-    if (!proposal || !confirm("Converter proposta em projeto? Cliente, financeiro, cronograma e tarefas serão criados.")) return;
+    if (!proposal || !confirm("Converter proposta em projeto? Serão criados automaticamente: composição financeira, parcelas, cronograma e tarefas.")) return;
     startTransition(async () => {
       try {
         const result = await convertProposalToProject(proposal.id);

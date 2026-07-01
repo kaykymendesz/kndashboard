@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getKnLogoDataUrl } from "@/lib/brand/kn-logo";
+import { getKnLogoDataUrl } from "@/lib/brand/kn-logo-server";
 
 export const runtime = "nodejs";
 
